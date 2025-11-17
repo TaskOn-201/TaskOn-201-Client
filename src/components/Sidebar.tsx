@@ -38,7 +38,7 @@ export default function Sidebar() {
             <Calendar className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-xs text-gray-500">Project Name</div>
+            <div className="text-xs text-main2">Project Name</div>
           </div>
         </div>
       </div>
