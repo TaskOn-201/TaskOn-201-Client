@@ -11,6 +11,32 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --font-sans: var(--font-open-sans);
+
+  /* Custom Colors */
+  --color-main: #009bb0;
+  --color-main2: #050b25;
+  --color-sub1: #a6e3e1;
+  --color-sub2: #fa6956;
+  --color-sub3: #6994e9;
+  --color-sub4: #acec4b;
+  --color-gray1: #f3f3f3;
+  --color-gray2: #eaeaea;
+  --color-gray3: #aaaaaa;
+  --color-gray4: #666666;
+  --color-gray5: #3e3a39;
+
+  /* Primary Shades */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-foreground: hsl(var(--primary-foreground));
 }
 
 @media (prefers-color-scheme: dark) {
