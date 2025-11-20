@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface ProfileProps {
   imageUrl?: string;
@@ -35,7 +36,7 @@ export default function Profile({
 
   return (
     <div className={className}>
-      <Avatar className={sizeClasses[size]}>
+      <Avatar className={cn(sizeClasses[size], className)}>
         {imageUrl && <AvatarImage src={imageUrl} alt={userName || "User"} />}
         <AvatarFallback>{getInitials(userName)}</AvatarFallback>
       </Avatar>
