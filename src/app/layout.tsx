@@ -31,10 +31,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${openSans.variable} antialiased `}>
-        <div className="flex">
+        <div className="flex h-screen">
           <Sidebar />
-          <Header />
-          {children}
+          <div className="w-full overflow-y-auto">
+            <Header />
+            {children}
+          </div>
         </div>
       </body>
     </html>
