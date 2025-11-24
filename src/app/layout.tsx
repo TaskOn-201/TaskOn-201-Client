@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -31,13 +30,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${openSans.variable} antialiased `}>
-        <div className="flex h-screen">
-          <Sidebar />
-          <div className="w-full overflow-y-auto">
-            <Header />
-            {children}
-          </div>
-        </div>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );
