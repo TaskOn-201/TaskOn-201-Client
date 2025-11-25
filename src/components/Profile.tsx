@@ -35,7 +35,7 @@ export default function Profile({
   };
 
   return (
-    <div className={className}>
+    <div>
       <Avatar className={cn(sizeClasses[size], className)}>
         {imageUrl && <AvatarImage src={imageUrl} alt={userName || "User"} />}
         <AvatarFallback>{getInitials(userName)}</AvatarFallback>
