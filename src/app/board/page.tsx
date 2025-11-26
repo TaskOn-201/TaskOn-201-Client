@@ -14,7 +14,7 @@ const Board = () => {
         },
         {
             label: "중요도",
-            value: "priority",
+            value: "label",
         },
         {
             label: "사용자명",
@@ -33,7 +33,10 @@ const Board = () => {
             {
                 taskId: 10,
                 title: "로그인 페이지 UI",
-                priority: "HIGH",
+                label: {
+                  labelName: "HIGH",
+                  color: "RED"
+                },
                 assigneeProfileImageUrl: "https://...",
                 participantProfileImageUrls: [
                     "https://...",
@@ -45,7 +48,10 @@ const Board = () => {
             {
                 taskId: 11,
                 title: "로그인 페이지 UI",
-                priority: "LOW",
+                label: {
+                  labelName: "MEDIUM",
+                  color: "YELLOW"
+                },
                 assigneeProfileImageUrl: "https://...",
                 participantProfileImageUrls: [],
                 commentCount: 3,
@@ -55,7 +61,10 @@ const Board = () => {
             {
                 taskId: 8,
                 title: "로그인 페이지 UI",
-                priority: "MEDIUM",
+                label: {
+                  labelName: "MEDIUM",
+                  color: "YELLOW"
+                },
                 assigneeProfileImageUrl: "https://...",
                 participantProfileImageUrls: ["https://..."],
                 commentCount: 3,
@@ -66,7 +75,10 @@ const Board = () => {
             {
                 taskId: 4,
                 title: "로그인 페이지 UI",
-                priority: "LOW",
+                label: {
+                  labelName: "LOW",
+                  color: "GRAY"
+                },
                 assigneeProfileImageUrl: "https://...",
                 participantProfileImageUrls: ["https://..."],
                 commentCount: 3,
