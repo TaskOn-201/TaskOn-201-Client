@@ -1,10 +1,10 @@
 import { cn } from "../lib/utils";
 
-export type LabelVariant = "default" | "red" | "blue" | "green" | "black" | "white";
+export type LabelVariant = "default" | "red" | "blue" | "green" | "black" | "white" | "yellow";
 type size = "xs" | "sm" | "md";
 
 interface LabelProps {
-    label: string;
+    text: string;
     variant?: LabelVariant;
     size?: size;
     className?: string;
@@ -19,16 +19,17 @@ const sizeClasses: Record<size, string> = {
 };
 
 const variantClasses: Record<LabelVariant, string> = {
-    default: "bg-gray1 text-black",
+    default: "bg-gray1 text-black/60",
     red: "bg-sub2/20 text-red-400",
     blue: "bg-sub3/30 text-blue-500",
     green: "bg-sub4/40 text-green-600",
     black: "bg-gray5 text-white",
     white: "bg-white border text-black",
+    yellow: "bg-yellow-200/70  text-yellow-600"
 };
 
 const Label = ({
-    label,
+    text,
     variant = "default",
     size = "sm",
     className,
@@ -52,10 +53,10 @@ const Label = ({
             {leftIcon ? (
                 <span className="flex items-center gap-2">
                     {leftIcon}
-                    {label}
+                    {text}
                 </span>
             ) : (
-                <span>{label}</span>
+                <span>{text}</span>
             )}
         </Component>
     );

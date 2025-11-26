@@ -1,20 +1,17 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import Label from "@/components/Label";
+import Label, { LabelVariant } from "@/components/Label";
 import Profile from "@/components/Profile";
 import { MessageSquareText, Plus } from "lucide-react";
-import { Priority, StateDataProps } from "./type";
+import { LabelColorType, StateDataProps } from "./type";
 
-type color = "red" | "green" | "default";
-
-const PRIORITY_VARIANT_MAP: Record<Priority, color> = {
-    HIGH: "red",
-    MEDIUM: "green",
-    LOW: "default",
+const LABEL_COLOR_MAP: Record<LabelColorType, LabelVariant> = {
+  RED: "red",
+  YELLOW: "yellow",
+  GRAY: "default",
 };
-
 const StateTaskCard = ({
     title,
-    priority,
+    label,
     assigneeProfileImageUrl,
     participantProfileImageUrls,
     commentCount,
@@ -27,8 +24,8 @@ const StateTaskCard = ({
                         {title}
                     </h4>
                     <Label
-                        label={priority}
-                        variant={PRIORITY_VARIANT_MAP[priority]}
+                        text={label.labelName}
+                        variant={LABEL_COLOR_MAP[label.color]}
                         size="sm"
                     />
                 </CardContent>
