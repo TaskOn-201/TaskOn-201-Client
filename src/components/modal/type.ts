@@ -36,4 +36,5 @@ export interface UserInfoModalProps {
   closeOnEsc?: boolean;
   showCloseButton?: boolean;
   className?: string;
+  titleNode?: React.ReactNode;
 }
