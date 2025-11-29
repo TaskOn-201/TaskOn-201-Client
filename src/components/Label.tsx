@@ -1,6 +1,13 @@
 import { cn } from "../lib/utils";
 
-export type LabelVariant = "default" | "red" | "blue" | "green" | "black" | "white" | "yellow";
+export type LabelVariant =
+    | "default"
+    | "red"
+    | "blue"
+    | "green"
+    | "black"
+    | "white"
+    | "yellow";
 type size = "xs" | "sm" | "md";
 
 interface LabelProps {
@@ -9,6 +16,7 @@ interface LabelProps {
     size?: size;
     className?: string;
     leftIcon?: React.ReactNode;
+    rightIcon?: React.ReactNode;
     onClick?: () => void;
 }
 
@@ -25,7 +33,7 @@ const variantClasses: Record<LabelVariant, string> = {
     green: "bg-sub4/40 text-green-600",
     black: "bg-gray5 text-white",
     white: "bg-white border text-black",
-    yellow: "bg-yellow-200/70  text-yellow-600"
+    yellow: "bg-yellow-200/70  text-yellow-600",
 };
 
 const Label = ({
@@ -34,6 +42,7 @@ const Label = ({
     size = "sm",
     className,
     leftIcon,
+    rightIcon,
     onClick,
 }: LabelProps) => {
     const Component = onClick ? "button" : "div";
@@ -50,13 +59,12 @@ const Label = ({
             type={onClick ? "button" : undefined}
             onClick={onClick}
         >
-            {leftIcon ? (
-                <span className="flex items-center gap-2">
-                    {leftIcon}
-                    {text}
-                </span>
-            ) : (
-                <span>{text}</span>
+            <span className="flex items-center gap-2">
+                {leftIcon && leftIcon}
+                {text}
+            </span>
+            {rightIcon && (
+                <span className="flex items-center">{rightIcon}</span>
             )}
         </Component>
     );

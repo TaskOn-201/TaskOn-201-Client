@@ -2,14 +2,14 @@ import StateTaskCard from "./StateTaskCard";
 import { StateDataProps } from "./type";
 
 interface StateSectionProps {
-    state: string;
+    status: string;
     tasks: StateDataProps[];
 }
 
-const StateSection = ({ state, tasks }: StateSectionProps) => {
+const StateSection = ({ status, tasks }: StateSectionProps) => {
     return (
         <section className="flex-1 min-w-[200px]">
-            <h3 className="mb-3 ml-1 text-xl text-gray5 font-bold">{state}</h3>
+            <h3 className="mb-3 ml-1 text-xl text-gray5 font-bold">{status}</h3>
             <ul className="bg-gray1/80 p-4 rounded-xl flex flex-col gap-3">
                 {tasks.map((item) => (
                     <StateTaskCard key={item.taskId} {...item} />

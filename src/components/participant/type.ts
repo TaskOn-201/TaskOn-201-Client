@@ -6,6 +6,6 @@ export interface Participant {
     email: string;
     profileImageUrl: string | null;
     role: string;
-    removable: boolean;
-    isExisting: boolean;
+    removable?: boolean;
+    isExisting?: boolean;
 }

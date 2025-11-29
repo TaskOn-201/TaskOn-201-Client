@@ -1,16 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import Label from "../Label";
-import { LabelVariant } from "@/components/Label";
-
-interface PopoverDropboxOption {
-    id: string;
-    label: string;
-    variant?: LabelVariant;
-    leftIcon?: React.ReactNode; // 프로필 이미지, leftIcon 위치
-    onClick?: () => void;
-}
-
+import { PopoverDropboxOption } from "./type";
 interface PopoverDropboxProps {
     options: PopoverDropboxOption[];
     className?: string;
@@ -37,8 +28,8 @@ const PopoverDropbox = ({
             >
                 {options.map((option) => (
                     <Label
-                        key={option.id}
-                        label={option.label}
+                        key={option.value}
+                        text={option.label}
                         variant={option.variant}
                         leftIcon={option.leftIcon}
                         onClick={option.onClick}
