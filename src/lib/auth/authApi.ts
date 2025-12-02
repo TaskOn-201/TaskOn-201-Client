@@ -33,6 +33,7 @@ interface SignupPayload {
 
 export class ApiError extends Error {
     status?: number;
+    data? : string;
 }
 
 export async function loginRequest({
@@ -81,6 +82,7 @@ export async function signupRequest({
     if (!res.ok) {
         const error = new ApiError(body.message || "회원가입 실패");
         error.status = res.status;
+        error.data = body.data
         throw error;
     }
 

@@ -31,7 +31,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         onError: (error: ApiError) => {
             const status = error.status;
             if (status === 400) {
-                toast.error(error.message || "입력값 검증 실패하였습니다.");
+                toast.error(error.data || error.message || "입력값 검증에 실패했습니다. 정보를 다시 확인해주세요.");
             } else {
                 toast.error("회원가입에 실패하였습니다");
             }
@@ -42,7 +42,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         e.preventDefault();
 
         const passwordPattern =
-            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{14,}$/;
+            /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{14,}$/;
         if (!isEmailCheck) {
             toast.error("이메일 중복 확인 후 진행해주세요");
             return;
@@ -149,7 +149,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
                         <Input
                             label="이름"
                             type="text"
-                            placeholder="이름을 입력하세요"
+                            placeholder="이름을 입력하세요(한글 또는 영어로만 구성된 2~15자)"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             fullWidth
