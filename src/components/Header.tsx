@@ -24,6 +24,7 @@ const Header = ({ className }: HeaderProps) => {
 
     const logoutHandler = () => {
         clearAuth();
+        router.refresh();
         router.replace("/");
     };
 

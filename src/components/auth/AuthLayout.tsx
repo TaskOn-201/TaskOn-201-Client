@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { Toaster } from "sonner";
+import { Toaster } from "../ui/sonner";
 
 interface AuthLayoutProps {
   children: ReactNode;
