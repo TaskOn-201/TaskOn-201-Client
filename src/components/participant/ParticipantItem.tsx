@@ -39,7 +39,7 @@ const ParticipantItem = ({ mode, participant }: ParticipantItemProps) => {
                         className="w-0.5 h-0.5 absolute -top-0.5 -right-1.5 z-10"
                     />
                 )}
-                <Profile size="sm" imageUrl={profileImageUrl} />
+                <Profile size="sm" imageUrl={profileImageUrl ?? undefined} />
             </div>
             <span className="text-xs overflow-hidden text-ellipsis">
                 {name}
