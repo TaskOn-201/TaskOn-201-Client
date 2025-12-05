@@ -108,7 +108,7 @@ export default function ChangePasswordSection() {
             <div className="max-w-2xl mx-auto space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Current Password
+                        현재 비밀번호
                     </label>
                     <Input
                         type="password"
@@ -121,7 +121,7 @@ export default function ChangePasswordSection() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password
+                        새로운 비밀번호
                     </label>
                     <Input
                         type="password"
@@ -134,7 +134,7 @@ export default function ChangePasswordSection() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password Confirm
+                        새로운 비밀번호 확인
                     </label>
                     <Input
                         type="password"
@@ -147,7 +147,7 @@ export default function ChangePasswordSection() {
 
                 <div className="flex justify-end pt-2">
                     <Button
-                        label="Password change"
+                        label="비밀번호 변경"
                         variant={isFormValid ? "primary" : "disable"}
                         size="sm"
                         className="px-4 py-2"
