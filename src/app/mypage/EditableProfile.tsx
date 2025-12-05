@@ -28,7 +28,7 @@ export default function EditableProfile({
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null); // 미리보기 용
 
-    const MAX_FILE_SIZE = 2 * 1024 * 1024;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     // 메모리 점유 정리
     useEffect(() => {
@@ -60,7 +60,7 @@ export default function EditableProfile({
         }
         if (file.size > MAX_FILE_SIZE) {
             toast.error(
-                "파일 크기가 2MB를 초과했습니다, 다른 이미지로 업로드 해주세요",
+                "파일 크기가 5MB를 초과했습니다, 다른 이미지로 업로드 해주세요",
                 { duration: 2000 }
             );
             e.target.value = ""; // 같은 이미지를 또 등록해도 메세지 출력되게
@@ -109,7 +109,7 @@ export default function EditableProfile({
                 />
             </button>
             <span className="text-[12px] text-gray3">
-                jpg, jpeg, png, webp 확장자만 가능, 최대 10MB
+                jpg, jpeg, png, webp 확장자만 가능, 최대 5MB
             </span>
         </div>
     );
