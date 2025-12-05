@@ -69,15 +69,12 @@ const Header = ({ className }: HeaderProps) => {
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex gap-3 py-2 cursor-pointer items-center">
                             {/* 사용자 프로필 */}
-                            {isAuthenticated &&
-                            user?.profileImageUrl !== null ? (
+                            {isAuthenticated && user?.profileImageUrl ? (
                                 <Profile
                                     size="sm"
                                     imageUrl={user?.profileImageUrl}
                                 />
-                            ) : (
-                                <Profile size="sm" />
-                            )}
+                            ) : <Profile userName={user?.name} className="size-10" />}
                             <span className="flex flex-col justify-center text-main2">
                                 {isAuthenticated ? user?.name : "로딩..."}
                             </span>
