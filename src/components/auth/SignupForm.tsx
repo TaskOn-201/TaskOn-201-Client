@@ -66,7 +66,8 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
     };
 
     const handleKakaoLogin = () => {
-        console.log("Kakao Login");
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        window.location.href = `${API_BASE_URL}/oauth2/authorization/kakao`;
     };
 
     const emailCheckMutation = useMutation({

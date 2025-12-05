@@ -55,7 +55,8 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
     };
 
     const handleKakaoLogin = () => {
-        console.log("Kakao Login");
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        window.location.href = `${API_BASE_URL}/oauth2/authorization/kakao`;
     };
 
     return (
@@ -78,7 +79,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                     className="space-y-4 sm:space-y-5"
                 >
                     <Input
-                        label="Email"
+                        label="이메일"
                         type="email"
                         placeholder="이메일을 입력하세요"
                         value={email}
@@ -88,7 +89,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                     />
 
                     <Input
-                        label="Password"
+                        label="비밀번호"
                         type="password"
                         placeholder="비밀번호를 입력하세요"
                         value={password}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // 인증이 필요 없는 공개 페이지
-const PUBLIC_PATHS = ["/", "/login", "/signup"];
+const PUBLIC_PATHS = ["/", "/login", "/signup","/oauth2/success"];
 
 export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken");

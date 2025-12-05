@@ -6,7 +6,7 @@ import Header from "./Header";
 import { Toaster } from "./ui/sonner";
 
 // Sidebar/Header가 없는 페이지 (인증 체크는 middleware.ts에서 처리)
-const NO_LAYOUT_PATHS = ["/", "/login", "/signup", "/projects"];
+const NO_LAYOUT_PATHS = ["/", "/login", "/signup", "/projects", "/oauth2/success"];
 
 export default function LayoutWrapper({
   children,
