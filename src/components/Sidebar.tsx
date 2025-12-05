@@ -1,15 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Calendar,
   Clipboard,
   LayoutDashboard,
   MessageSquare,
+  ChevronDown,
+  Plus,
+  FolderKanban,
+  Play,
+  Trash,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Project,
+  deleteProjectRequest,
+  getProjectsRequest,
+} from "@/lib/project/projectApi";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [activeMenu, setActiveMenu] = useState("Board");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const menuItems = [
     { name: "Backlog", icon: Clipboard, hasNotification: false },
@@ -29,18 +53,134 @@ export default function Sidebar() {
     { id: "user09", name: "사용자9", isOnline: true },
   ];
 
+  // 프로젝트 목록 조회
+  const fetchProjects = async () => {
+    if (!isAuthenticated) return;
+
+    setIsLoading(true);
+    try {
+      const response = await getProjectsRequest();
+      setProjects(response.data);
+      if (response.data.length > 0 && !currentProject) {
+        setCurrentProject(response.data[0]);
+      }
+    } catch (error) {
+      console.error("프로젝트 목록 조회 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 프로젝트 선택
+  const handleSelectProject = (project: Project) => {
+    setCurrentProject(project);
+    setDropdownOpen(false);
+  };
+
+  // 인증 상태가 변경되면 프로젝트 목록 조회
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProjects();
+    }
+  }, [isAuthenticated]);
+  const handleDeleteProject = async (
+    projectId: number,
+    projectName: string
+  ) => {
+    try {
+      await deleteProjectRequest(projectId, projectName);
+
+      // 삭제된 프로젝트가 현재 선택된 프로젝트인 경우 처리
+      if (currentProject?.projectId === projectId) {
+        const remainingProjects = projects.filter(
+          (p) => p.projectId !== projectId
+        );
+        setCurrentProject(
+          remainingProjects.length > 0 ? remainingProjects[0] : null
+        );
+      }
+
+      fetchProjects();
+    } catch (error) {
+      console.error("프로젝트 삭제 실패:", error);
+    }
+  };
   return (
     <aside className="w-80 h-screen bg-white flex flex-col border-r border-gray1">
-      {/* 헤더 */}
+      {/* 헤더 - 프로젝트 선택 드롭다운 */}
       <div className="p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-main rounded-lg flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="text-md font-bold text-main2">Project Name</div>
-          </div>
-        </div>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 hover:bg-gray1 rounded-lg p-2 -m-2 transition-colors w-full">
+              <div className="w-8 h-8 bg-main rounded-lg flex items-center justify-center">
+                <Play className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="text-md font-bold text-main2 truncate">
+                  {currentProject?.projectName || "프로젝트 선택"}
+                </div>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64">
+            {/* 프로젝트 목록 */}
+            <div className="max-h-48 overflow-y-auto">
+              {isLoading ? (
+                <div className="px-2 py-3 text-sm text-gray4 text-center">
+                  로딩 중...
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="px-2 py-3 text-sm text-gray4 text-center">
+                  프로젝트가 없습니다
+                </div>
+              ) : (
+                projects.map((project) => (
+                  <DropdownMenuItem
+                    key={project.projectId}
+                    onClick={() => handleSelectProject(project)}
+                    className={`cursor-pointer ${
+                      currentProject?.projectId === project.projectId
+                        ? "bg-gray1"
+                        : ""
+                    }`}
+                  >
+                    <FolderKanban className="w-4 h-4 mr-2 text-main" />
+                    <span className="truncate">{project.projectName}</span>
+                    <button
+                      type="button"
+                      className="ml-auto p-1 rounded hover:bg-red-100"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleteProject(
+                          project.projectId,
+                          project.projectName
+                        );
+                      }}
+                    >
+                      <Trash className="w-4 h-4 text-red-500 hover:text-red-700" />
+                    </button>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </div>
+
+            <DropdownMenuSeparator />
+
+            {/* 프로젝트 생성 버튼 */}
+            <DropdownMenuItem
+              onClick={() => {
+                setDropdownOpen(false);
+                router.push("/projects");
+              }}
+              className="cursor-pointer"
+            >
+              <Plus className="w-4 h-4 mr-2 text-main" />
+              <span>새 프로젝트 생성</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* 메뉴 항목 */}
