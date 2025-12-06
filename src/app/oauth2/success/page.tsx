@@ -15,7 +15,7 @@ const OAuth2SuccessPage = () => {
         const accessToken = searchParams.get("accessToken");
 
         if (!accessToken) {
-            toast.error("카카오 로그인 정보가 올바르지 않습니다.", {
+            toast.error("쇼설 로그인 정보가 올바르지 않습니다.", {
                 duration: 2000,
             });
             setTimeout(() => {
@@ -47,13 +47,13 @@ const OAuth2SuccessPage = () => {
                 saveAuth(accessToken, user);
                 setAuth(accessToken, user);
 
-                toast.success("카카오 로그인 완료!");
+                toast.success("소셜 로그인 완료!");
                 setTimeout(() => {
                     router.replace("/");
                 }, 2500);
             } catch (error) {
                 console.error(error);
-                toast.error("카카오 로그인 처리 중 오류가 발생했습니다.");
+                toast.error("소셜 로그인 처리 중 오류가 발생했습니다.");
                 setTimeout(() => {
                     router.replace("/login");
                 }, 2500);
@@ -63,7 +63,7 @@ const OAuth2SuccessPage = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <p>카카오 로그인 처리 중입니다...</p>
+            <p>소셜 로그인 처리 중입니다...</p>
         </div>
     );
 }

@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import Button from "./Button";
 import { logoutRequest } from "@/lib/auth/authApi";
 import { toast } from "sonner";
+import useMe from "@/lib/user/useMe";
+import { Loader2 } from "lucide-react";
 
 interface HeaderProps {
     className?: string;
@@ -22,7 +24,10 @@ interface HeaderProps {
 
 const Header = ({ className }: HeaderProps) => {
     const { user, isAuthenticated, clearAuth } = useAuthStore();
+    const { data: me, isLoading, error } = useMe();
     const router = useRouter();
+
+    console.log(me);
 
     const logoutHandler = async () => {
         try {
@@ -49,6 +54,8 @@ const Header = ({ className }: HeaderProps) => {
         }
     };
 
+    const isLoggedIn = !!me && !error;
+
     return (
         <header
             className={cn(
@@ -65,21 +72,20 @@ const Header = ({ className }: HeaderProps) => {
                 />
             </div>
             <div className="w-fit">
-                {isAuthenticated ? (
+               {isLoggedIn ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex gap-3 py-2 cursor-pointer items-center">
                             {/* 사용자 프로필 */}
-                            {isAuthenticated &&
-                            user?.profileImageUrl !== null ? (
+                            {me.profileImageUrl !== null ? (
                                 <Profile
                                     size="sm"
-                                    imageUrl={user?.profileImageUrl}
+                                    imageUrl={me.profileImageUrl}
                                 />
                             ) : (
                                 <Profile size="sm" />
                             )}
                             <span className="flex flex-col justify-center text-main2">
-                                {isAuthenticated ? user?.name : "로딩..."}
+                                {me.name}
                             </span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="min-w-6" align="center">
