@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchMe, UserInfoResponse } from "./userApi";
-
-type MeData = UserInfoResponse["data"];
+import { fetchMe } from "./userApi";
 
 const useMe = () => {
-  return useQuery<MeData | null>({
+  return useQuery({
     queryKey: ["me"],
     queryFn: fetchMe,
     staleTime: 1000 * 60, // 데이터 최신 유지 시간
