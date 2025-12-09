@@ -40,7 +40,7 @@ export default function ProjectCreateForm() {
     <div className="min-h-screen bg-gray1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/board")}
           className="flex items-center gap-2 text-gray4 hover:text-main mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

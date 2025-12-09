@@ -10,7 +10,11 @@ import {
   FolderKanban,
   Play,
   Trash,
+  Users,
+  Settings,
 } from "lucide-react";
+import ProjectTeamModal from "@/components/modal/ProjectTeamModal";
+import { ProjectTeamModalTab } from "@/components/modal/type";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +29,11 @@ import {
 } from "@/lib/project/projectApi";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
+import {
+  InviteTabContent,
+  ProjectSettingsTabContent,
+  OnlineMembersList,
+} from "@/components/sidebar-components";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -34,12 +43,7 @@ export default function Sidebar() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const menuItems = [
-    { name: "Backlog", icon: Clipboard, hasNotification: false },
-    { name: "Board", icon: LayoutDashboard, hasNotification: false },
-    { name: "Inbox", icon: MessageSquare, hasNotification: true },
-  ];
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   const teamMembers = [
     { id: "user01", name: "사용자1", isOnline: true },
@@ -51,6 +55,27 @@ export default function Sidebar() {
     { id: "user07", name: "사용자7", isOnline: true },
     { id: "user08", name: "사용자8", isOnline: false },
     { id: "user09", name: "사용자9", isOnline: true },
+  ];
+
+  const menuItems = [
+    {
+      name: "Backlog",
+      icon: Clipboard,
+      hasNotification: false,
+      path: "/backlog",
+    },
+    {
+      name: "Board",
+      icon: LayoutDashboard,
+      hasNotification: false,
+      path: "/board",
+    },
+    {
+      name: "Inbox",
+      icon: MessageSquare,
+      hasNotification: true,
+      path: "/inbox",
+    },
   ];
 
   // 프로젝트 목록 조회
@@ -83,6 +108,7 @@ export default function Sidebar() {
       fetchProjects();
     }
   }, [isAuthenticated]);
+
   const handleDeleteProject = async (
     projectId: number,
     projectName: string
@@ -105,6 +131,40 @@ export default function Sidebar() {
       console.error("프로젝트 삭제 실패:", error);
     }
   };
+
+  // 팀관리 모달 탭 구성
+  const teamModalTabs: ProjectTeamModalTab[] = [
+    {
+      id: "invite",
+      label: "Invite",
+      title: "프로젝트 참여자 추가",
+      icon: <Users className="w-4 h-4" />,
+      content: (
+        <InviteTabContent
+          projectId={currentProject?.projectId ?? null}
+          onInviteSuccess={() => setIsTeamModalOpen(false)}
+        />
+      ),
+    },
+    {
+      id: "settings",
+      label: "Project Setting",
+      title: "프로젝트 설정",
+      icon: <Settings className="w-4 h-4" />,
+      content: (
+        <ProjectSettingsTabContent
+          projectId={currentProject?.projectId ?? null}
+          projectName={currentProject?.projectName || ""}
+          onDeleteSuccess={() => {
+            setIsTeamModalOpen(false);
+            setCurrentProject(null);
+            fetchProjects();
+          }}
+        />
+      ),
+    },
+  ];
+
   return (
     <aside className="w-80 h-screen bg-white flex flex-col border-r border-gray1">
       {/* 헤더 - 프로젝트 선택 드롭다운 */}
@@ -191,7 +251,10 @@ export default function Sidebar() {
             return (
               <button
                 key={item.name}
-                onClick={() => setActiveMenu(item.name)}
+                onClick={() => {
+                  setActiveMenu(item.name);
+                  router.push(item.path);
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative hover:bg-gray1 ${
                   activeMenu === item.name
                     ? "text-main font-bold"
@@ -206,48 +269,28 @@ export default function Sidebar() {
         </div>
 
         {/* 접속 목록 */}
-        <div className="px-3 py-4">
-          <h3 className="px-3 text-xs font-bold text-gray5 mb-2">접속 목록</h3>
-          <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
-            {teamMembers.map((member) => (
-              <button
-                key={member.id}
-                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray1 transition-colors relative"
-              >
-                <div className="relative">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                      member.isOnline
-                        ? "bg-gray3 text-gray4"
-                        : "bg-gray2 text-gray3"
-                    }`}
-                  >
-                    {member.id[9]}
-                  </div>
-                  {member.isOnline && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-main rounded-full border-2 border-gray1"></span>
-                  )}
-                </div>
-                <span
-                  className={`text-sm ${
-                    member.isOnline ? "text-gray4" : "text-gray3"
-                  }`}
-                >
-                  {member.id}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <OnlineMembersList members={teamMembers} />
       </nav>
 
       {/* 팀관리 버튼 */}
       <div className="p-4">
-        <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg transition-colors font-medium text-sm hover:opacity-90">
+        <button
+          onClick={() => setIsTeamModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-main text-white rounded-lg transition-colors font-medium text-sm hover:opacity-90"
+        >
           <span>+</span>
           <span> 팀관리</span>
         </button>
       </div>
+
+      {/* 팀관리 모달 */}
+      <ProjectTeamModal
+        isOpen={isTeamModalOpen}
+        onClose={() => setIsTeamModalOpen(false)}
+        title="프로젝트 참여자 추가"
+        tabs={teamModalTabs}
+        defaultTabId="invite"
+      />
     </aside>
   );
 }

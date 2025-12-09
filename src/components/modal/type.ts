@@ -10,6 +10,7 @@ export interface BaseModalProps {
 export interface ProjectTeamModalTab {
   id: string;
   label: string;
+  title?: string;
   icon?: React.ReactNode;
   content: React.ReactNode;
   footer?: React.ReactNode;
