@@ -7,8 +7,13 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ApiError, loginRequest } from "@/lib/auth/authApi";
-import { useMutation } from "@tanstack/react-query";
+import {
+    useMutation,
+    QueryClient,
+    useQueryClient,
+} from "@tanstack/react-query";
 import Oauth2Button from "./Oauth2Button";
+import { saveAuth } from "@/lib/auth/authStorage";
 
 interface LoginFormProps {
     isVisible: boolean;
@@ -19,14 +24,18 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
     const setAuth = useAuthStore((state) => state.setAuth);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const queryClient = useQueryClient();
 
     const loginMutation = useMutation({
         mutationFn: loginRequest,
         onSuccess: (data) => {
             const { accessToken, user } = data.data;
 
+            saveAuth(accessToken, user);
             setAuth(accessToken, user);
+            queryClient.setQueryData(["me"], user);
             router.replace("/");
+            router.refresh();
         },
         onError: (error: ApiError) => {
             const status = error.status;

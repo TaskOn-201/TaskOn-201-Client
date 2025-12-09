@@ -1,5 +1,5 @@
 import { authFetch } from "./authFetch";
-import { AuthUser } from "./authStorage";
+import { AuthUser, getAccessToken } from "./authStorage";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -33,7 +33,7 @@ interface SignupPayload {
 
 export class ApiError extends Error {
     status?: number;
-    data? : string;
+    data?: string;
 }
 
 export async function loginRequest({
@@ -82,7 +82,7 @@ export async function signupRequest({
     if (!res.ok) {
         const error = new ApiError(body.message || "회원가입 실패");
         error.status = res.status;
-        error.data = body.data
+        error.data = body.data;
         throw error;
     }
 
@@ -108,8 +108,11 @@ export async function checkEmailRequest(email: string) {
 }
 
 export async function logoutRequest() {
-    return authFetch("/api/auth/logout", {
+    const token = getAccessToken();
+
+    return fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        credentials: "include",
     });
 }
-

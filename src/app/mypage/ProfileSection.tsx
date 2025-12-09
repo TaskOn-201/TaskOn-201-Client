@@ -6,7 +6,7 @@ import Input from "@/components/Input";
 import { ApiError } from "@/lib/auth/authApi";
 import { AuthUser, saveAuth } from "@/lib/auth/authStorage";
 import { profileUpdateRequest } from "@/lib/user/userApi";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +23,7 @@ const ProfileSection = ({
 }: ProfileSectionProps) => {
     const [name, setName] = useState(user.name);
     const [profileImageUrl, setProfileImageUrl] = useState<File | null>(null);
+    const queryClient = useQueryClient();
 
     const profileUpdateMutation = useMutation({
         mutationFn: profileUpdateRequest,
@@ -31,6 +32,7 @@ const ProfileSection = ({
                 setAuth(accessToken, user);
                 saveAuth(accessToken, user);
             }
+            queryClient.setQueryData(["me"], user);
             toast.success("프로필이 성공적으로 업데이트되었습니다.");
             setProfileImageUrl(null);
         },
