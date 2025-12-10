@@ -40,7 +40,14 @@ export default function Home() {
             height={50}
           />
         </div>
-        <div className="py-10">
+        <div className="py-10 flex gap-4">
+          <Link href={isAuthenticated ? "/board" : "/login"}>
+            <Button
+              label="내 Board 보기"
+              size="md"
+              className="font-bold px-4 py-2"
+            />
+          </Link>
           <Link href={isAuthenticated ? "/projects" : "/login"}>
             <Button
               label="새 프로젝트 시작하기"

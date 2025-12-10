@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Project, getProjectsRequest } from "@/lib/project/projectApi";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { useRouter } from "next/navigation";
 import {
   InviteTabContent,
@@ -34,10 +35,15 @@ import {
 export default function Sidebar() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const {
+    projects,
+    currentProject,
+    isLoading,
+    setProjects,
+    setCurrentProject,
+    setIsLoading,
+  } = useProjectStore();
   const [activeMenu, setActiveMenu] = useState("Board");
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
