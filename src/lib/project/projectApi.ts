@@ -95,3 +95,153 @@ export async function deleteProjectRequest(
   }
   return body as ProjectDeleteResponse;
 }
+
+// 프로젝트 멤버 조회
+export interface ProjectMember {
+  userId: number;
+  name: string;
+  email: string;
+  profileImageUrl: string;
+  role: "LEADER" | "MEMBER";
+}
+
+interface ProjectMembersResponse {
+  statusCode: number;
+  message: string;
+  data: ProjectMember[];
+}
+
+export async function getProjectMembersRequest(
+  projectId: number
+): Promise<ProjectMembersResponse> {
+  const res = await authFetch(`/api/projects/${projectId}/members`, {
+    method: "GET",
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new ProjectApiError(body.message || "멤버 조회 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as ProjectMembersResponse;
+}
+
+// 프로젝트 멤버 검색
+export interface SearchedMember {
+  userId: number;
+  name: string;
+  email: string;
+  profileImageUrl: string;
+}
+
+interface MemberSearchResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    content: SearchedMember[];
+    size: number;
+    number: number;
+    hasNext: boolean;
+  };
+}
+
+interface MemberSearchParams {
+  projectId: number;
+  keyword: string;
+  page?: number;
+  size?: number;
+  sort?: string[];
+}
+
+export async function searchProjectMembersRequest({
+  projectId,
+  keyword,
+  page = 0,
+  size = 10,
+  sort = ["name"],
+}: MemberSearchParams): Promise<MemberSearchResponse> {
+  const params = new URLSearchParams({
+    keyword,
+    page: page.toString(),
+    size: size.toString(),
+  });
+
+  sort.forEach((s) => params.append("sort", s));
+
+  const res = await authFetch(
+    `/api/projects/${projectId}/members/search?${params.toString()}`,
+    {
+      method: "GET",
+    }
+  );
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new ProjectApiError(body.message || "멤버 검색 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as MemberSearchResponse;
+}
+
+// 프로젝트 멤버 초대
+interface InviteMembersResponse {
+  statusCode: number;
+  message: string;
+  data: null;
+}
+
+export async function inviteProjectMembersRequest(
+  projectId: number,
+  userIds: number[]
+): Promise<InviteMembersResponse> {
+  const res = await authFetch(`/api/projects/${projectId}/members`, {
+    method: "POST",
+    body: JSON.stringify({ userIds }),
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new ProjectApiError(body.message || "멤버 초대 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as InviteMembersResponse;
+}
+
+// 프로젝트 멤버 삭제
+interface RemoveMemberResponse {
+  statusCode: number;
+  message: string;
+  data: Record<string, never>;
+}
+
+export async function removeProjectMemberRequest(
+  projectId: number,
+  userId: number
+): Promise<RemoveMemberResponse> {
+  const res = await authFetch(`/api/projects/${projectId}/members/${userId}`, {
+    method: "DELETE",
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new ProjectApiError(body.message || "멤버 삭제 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as RemoveMemberResponse;
+}

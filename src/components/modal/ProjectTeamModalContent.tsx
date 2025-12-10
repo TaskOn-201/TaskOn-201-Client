@@ -12,12 +12,15 @@ export default function ProjectTeamModalContent({
   activeTab,
   onClose,
 }: ProjectTeamModalContentProps) {
+  // 탭에 title이 있으면 탭의 title 사용, 없으면 기본 title 사용
+  const displayTitle = activeTab?.title ?? title;
+
   return (
     <div className="w-[70%] bg-white flex flex-col">
       {/* 헤더 */}
-      <div className="flex items-center justify-between px-6 py-6">
+      <div className="flex items-center justify-between px-6 py-4">
         <h2 id="modal-title" className="text-lg font-semibold text-gray5">
-          {title}
+          {displayTitle}
         </h2>
         <button
           onClick={onClose}
@@ -29,7 +32,9 @@ export default function ProjectTeamModalContent({
       </div>
 
       {/* 컨텐츠 - 스크롤 영역 */}
-      <div className="p-6 overflow-y-auto flex-1">{activeTab?.content}</div>
+      <div className="px-6 pt-2 pb-6 overflow-y-auto flex-1">
+        {activeTab?.content}
+      </div>
 
       {/* 푸터 - 고정 */}
       {activeTab?.footer && (
