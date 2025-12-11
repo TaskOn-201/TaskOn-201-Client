@@ -245,3 +245,47 @@ export async function removeProjectMemberRequest(
 
   return body as RemoveMemberResponse;
 }
+
+// 프로젝트 사이드바 정보 조회
+export interface OnlineUser {
+  userId: number;
+  name: string;
+  profileImageUrl: string;
+  online: boolean;
+}
+
+export interface ProjectSidebarData {
+  project: {
+    projectId: number;
+    projectName: string;
+  };
+  onlineUsers: OnlineUser[];
+  unreadChatCount: number;
+}
+
+interface ProjectSidebarResponse {
+  statusCode: number;
+  message: string;
+  data: ProjectSidebarData;
+}
+
+export async function getProjectSidebarRequest(
+  projectId: number
+): Promise<ProjectSidebarResponse> {
+  const res = await authFetch(`/api/projects/${projectId}/sidebar`, {
+    method: "GET",
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new ProjectApiError(
+      body.message || "사이드바 정보 조회 실패"
+    );
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as ProjectSidebarResponse;
+}
