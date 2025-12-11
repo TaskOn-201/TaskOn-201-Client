@@ -3,12 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   SearchedMember,
-  ProjectMember,
   searchProjectMembersRequest,
-  inviteProjectMembersRequest,
-  getProjectMembersRequest,
 } from "@/lib/project/projectApi";
-import { toast } from "sonner";
+import { useProjectMembers } from "@/lib/project/useProjectMembers";
 
 interface InviteTabContentProps {
   projectId: number | null;
@@ -27,29 +24,12 @@ export default function InviteTabContent({
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // 기존 프로젝트 멤버 목록
-  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
-
-  // 프로젝트 멤버 조회
-  const fetchProjectMembers = useCallback(async () => {
-    if (!projectId) return;
-
-    setIsLoadingMembers(true);
-    try {
-      const response = await getProjectMembersRequest(projectId);
-      setProjectMembers(response.data);
-    } catch (error) {
-      console.error("멤버 조회 실패:", error);
-    } finally {
-      setIsLoadingMembers(false);
-    }
-  }, [projectId]);
-
-  // 프로젝트 ID가 변경되면 멤버 목록 조회
-  useEffect(() => {
-    fetchProjectMembers();
-  }, [fetchProjectMembers]);
+  // useProjectMembers 훅 사용
+  const {
+    members: projectMembers,
+    isLoading: isLoadingMembers,
+    inviteMembers,
+  } = useProjectMembers({ projectId });
 
   // 멤버 검색
   const handleSearchMembers = useCallback(
@@ -120,23 +100,15 @@ export default function InviteTabContent({
   const handleInviteMembers = async () => {
     if (!projectId || selectedMembers.length === 0) return;
 
-    try {
-      const userIds = selectedMembers.map((m) => m.userId);
-      await inviteProjectMembersRequest(projectId, userIds);
-
-      // 성공 시 상태 초기화 및 멤버 목록 새로고침
+    const userIds = selectedMembers.map((m) => m.userId);
+    await inviteMembers(userIds, () => {
+      // 성공 시 상태 초기화
       setSelectedMembers([]);
       setSearchKeyword("");
       setSearchResults([]);
       setShowSearchDropdown(false);
-
-      toast.success("멤버가 성공적으로 추가되었습니다.");
-      fetchProjectMembers(); // 멤버 목록 새로고침
       onInviteSuccess();
-    } catch (error) {
-      console.error("멤버 초대 실패:", error);
-      toast.error("멤버 초대에 실패했습니다.");
-    }
+    });
   };
 
   // 검색 드롭다운 외부 클릭 감지

@@ -1,10 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  ProjectMember,
-  getProjectMembersRequest,
-} from "@/lib/project/projectApi";
+import { useProjectMembers } from "@/lib/project/useProjectMembers";
 
 interface MemberViewTabContentProps {
   projectId: number | null;
@@ -15,33 +11,9 @@ export default function MemberViewTabContent({
   projectId,
   projectName,
 }: MemberViewTabContentProps) {
-  const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
-
-  // 리더 찾기
-  const leader = members.find((m) => m.role === "LEADER");
-  // 일반 멤버들
-  const regularMembers = members.filter((m) => m.role === "MEMBER");
-
-  // 프로젝트 멤버 조회
-  const fetchMembers = useCallback(async () => {
-    if (!projectId) return;
-
-    setIsLoadingMembers(true);
-    try {
-      const response = await getProjectMembersRequest(projectId);
-      setMembers(response.data);
-    } catch (error) {
-      console.error("멤버 조회 실패:", error);
-    } finally {
-      setIsLoadingMembers(false);
-    }
-  }, [projectId]);
-
-  // projectId 변경 시 멤버 조회
-  useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
+  const { leader, regularMembers, isLoading } = useProjectMembers({
+    projectId,
+  });
 
   return (
     <div className="space-y-6">
@@ -63,7 +35,7 @@ export default function MemberViewTabContent({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           리더
         </label>
-        {isLoadingMembers ? (
+        {isLoading ? (
           <div className="text-sm text-gray-500">로딩 중...</div>
         ) : leader ? (
           <input
@@ -82,7 +54,7 @@ export default function MemberViewTabContent({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           참여자
         </label>
-        {isLoadingMembers ? (
+        {isLoading ? (
           <div className="text-sm text-gray-500">로딩 중...</div>
         ) : regularMembers.length === 0 ? (
           <div className="text-sm text-gray-500 text-center py-4">
@@ -91,10 +63,7 @@ export default function MemberViewTabContent({
         ) : (
           <div className="grid grid-cols-3 gap-3">
             {regularMembers.map((member) => (
-              <div
-                key={member.userId}
-                className="flex items-center gap-2"
-              >
+              <div key={member.userId} className="flex items-center gap-2">
                 {/* 프로필 이미지 */}
                 {member.profileImageUrl ? (
                   <img
@@ -118,4 +87,3 @@ export default function MemberViewTabContent({
     </div>
   );
 }
-
