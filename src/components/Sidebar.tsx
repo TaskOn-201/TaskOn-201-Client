@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Project, getProjectsRequest } from "@/lib/project/projectApi";
+import { useProjectSidebar } from "@/lib/project/useProjectSidebar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useRouter } from "next/navigation";
@@ -47,17 +48,11 @@ export default function Sidebar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
-  const teamMembers = [
-    { id: "user01", name: "사용자1", isOnline: true },
-    { id: "user02", name: "사용자2", isOnline: false },
-    { id: "user03", name: "사용자3", isOnline: true },
-    { id: "user04", name: "사용자4", isOnline: true },
-    { id: "user05", name: "사용자5", isOnline: false },
-    { id: "user06", name: "사용자6", isOnline: true },
-    { id: "user07", name: "사용자7", isOnline: true },
-    { id: "user08", name: "사용자8", isOnline: false },
-    { id: "user09", name: "사용자9", isOnline: true },
-  ];
+  // 사이드바 정보 조회 (useQuery)
+  const { onlineUsers, isLoading: isSidebarLoading } = useProjectSidebar({
+    projectId: currentProject?.projectId ?? null,
+    enabled: isAuthenticated && !!currentProject?.projectId,
+  });
 
   const menuItems = [
     {
@@ -255,7 +250,7 @@ export default function Sidebar() {
         </div>
 
         {/* 접속 목록 */}
-        <OnlineMembersList members={teamMembers} />
+        <OnlineMembersList members={onlineUsers} isLoading={isSidebarLoading} />
       </nav>
 
       {/* 팀관리 버튼 */}
