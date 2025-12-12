@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import UserInfoModal from "../modal/UserInfoModal";
 import Button from "../Button";
-import { PenLine, Settings2, Tag, UserRound, UserStar } from "lucide-react";
+import {
+  CalendarDays,
+  PenLine,
+  Settings2,
+  Tag,
+  UserRound,
+  UserStar,
+} from "lucide-react";
 import Label from "../Label";
 import Profile from "../Profile";
 import TaskPopoverSelect from "./TaskPopoverSelect";
@@ -38,6 +45,8 @@ const TaskEditorModal = ({
   const [status, setStatus] = useState<TaskStatus | undefined>(undefined);
   const [priority, setPriority] = useState<TaskPriority | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<number[]>([]);
+  const [startDate, setStartDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,19 +93,22 @@ const TaskEditorModal = ({
     fetchMembers();
   }, [isOpen, projectId]);
 
-  const isFormValid = title.trim() !== "" && status && priority;
+  const isFormValid =
+    title.trim() !== "" && status && priority && startDate && dueDate;
 
   const resetForm = () => {
     setTitle("");
     setStatus(undefined);
     setPriority(undefined);
     setParticipantIds([]);
+    setStartDate("");
+    setDueDate("");
     setDescription("");
   };
 
   const submitHandler = async () => {
     if (!isFormValid) {
-      toast.error("제목, 상태, 중요도를 입력해주세요.");
+      toast.error("제목, 상태, 중요도, 시작일, 마감일을 입력해주세요.");
       return;
     }
 
@@ -107,6 +119,8 @@ const TaskEditorModal = ({
         status: status!,
         priority: priority!,
         participantIds,
+        startDate,
+        dueDate,
         description: description.trim() || undefined,
       });
 
@@ -208,6 +222,29 @@ const TaskEditorModal = ({
                 참여 가능한 멤버가 없습니다
               </span>
             )}
+          </div>
+          <span className="inline-flex items-center text-gray4">
+            <CalendarDays size={18} className="mr-2" /> 시작일
+          </span>
+          <div>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
+            />
+          </div>
+          <span className="inline-flex items-center text-gray4">
+            <CalendarDays size={18} className="mr-2" /> 마감일
+          </span>
+          <div>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              min={startDate}
+              className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
+            />
           </div>
         </div>
         <div className="min-h-[200px] pt-4 border-b">
