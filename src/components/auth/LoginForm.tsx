@@ -30,7 +30,6 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
         onSuccess: (data) => {
             const { accessToken, user } = data.data;
 
-            saveAuth(accessToken, user);
             setAuth(accessToken, user);
             queryClient.setQueryData(["me"], user);
             router.replace("/");
