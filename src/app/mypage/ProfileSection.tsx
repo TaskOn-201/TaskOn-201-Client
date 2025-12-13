@@ -9,21 +9,18 @@ import { profileUpdateRequest } from "@/lib/user/userApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ProfileSectionProps {
     user: AuthUser;
-    accessToken: string | null;
-    setAuth: (token: string, user: AuthUser) => void;
 }
 
-const ProfileSection = ({
-    user,
-    accessToken,
-    setAuth,
-}: ProfileSectionProps) => {
+const ProfileSection = ({ user }: ProfileSectionProps) => {
     const [name, setName] = useState(user.name);
     const [profileImageUrl, setProfileImageUrl] = useState<File | null>(null);
     const queryClient = useQueryClient();
+    const accessToken = useAuthStore((u) => u.accessToken);
+    const setAuth = useAuthStore((u) => u.setAuth);
 
     const profileUpdateMutation = useMutation({
         mutationFn: profileUpdateRequest,

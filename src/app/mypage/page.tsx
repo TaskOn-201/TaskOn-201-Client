@@ -4,26 +4,28 @@ import PageHeader from "@/components/PageHeader";
 import ChangePasswordSection from "./ChangePasswordSection";
 import DeactivateAccountSection from "./DeactivateAccountSection";
 import ProfileSection from "./ProfileSection";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useMe from "@/lib/user/useMe";
 
 export default function MyPage() {
-    const { user, accessToken, setAuth } = useAuthStore();
+    const { data: user, isLoading } = useMe();
     const router = useRouter();
 
-    useEffect(()=>{
-      if(!user) {
-        router.replace("/login")
-      }
-    },[user, router])
+    if (isLoading) {
+        return <div>불러오는 중...</div>;
+    }
+
+    if (!user) {
+        router.replace("/login");
+        return null;
+    }
 
     return (
         <div className="min-h-screen">
             <PageHeader left="Settings" />
 
             <div className="max-w-4xl mx-auto p-6 space-y-6">
-                <ProfileSection user={user!} accessToken={accessToken} setAuth={setAuth} />
+                <ProfileSection user={user} />
                 <ChangePasswordSection />
                 <DeactivateAccountSection />
             </div>
