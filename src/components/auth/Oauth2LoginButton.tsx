@@ -1,22 +1,14 @@
+import { redirectOAuth } from "@/lib/auth/ouath";
 import Image from "next/image";
 import React from "react";
 
 const Oauth2Button = () => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-    const handleKakaoLogin = () => {
-        window.location.href = `${API_BASE_URL}/oauth2/authorization/kakao`;
-    };
-
-    const handleGoogleLogin = () => {
-        window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
-    };
 
     return (
         <div className="flex gap-8 justify-center">
             <button
                 type="button"
-                onClick={handleKakaoLogin}
+                onClick={()=> redirectOAuth("kakao")}
                 className="mt-6 max-w-xs hover:opacity-90 transition-opacity cursor-pointer"
             >
                 <Image
@@ -29,7 +21,7 @@ const Oauth2Button = () => {
             </button>
             <button
                 type="button"
-                onClick={handleGoogleLogin}
+                onClick={()=> redirectOAuth("google")}
                 className="mt-6 max-w-xs hover:opacity-90 transition-opacity cursor-pointer"
             >
                 <Image

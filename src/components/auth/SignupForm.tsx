@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { ApiError, checkEmailRequest, signupRequest } from "@/lib/auth/authApi";
-import Oauth2Button from "./Oauth2Button";
+import Oauth2Button from "./Oauth2LoginButton";
 import { isValidEmail, isValidPassword } from "@/lib/auth/validation";
 
 interface SignupFormProps {
@@ -62,11 +62,6 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         }
 
         signupMutation.mutate({ name, email, password, passwordCheck });
-    };
-
-    const handleKakaoLogin = () => {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-        window.location.href = `${API_BASE_URL}/oauth2/authorization/kakao`;
     };
 
     const emailCheckMutation = useMutation({

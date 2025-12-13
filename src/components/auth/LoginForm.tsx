@@ -12,7 +12,7 @@ import {
     QueryClient,
     useQueryClient,
 } from "@tanstack/react-query";
-import Oauth2Button from "./Oauth2Button";
+import Oauth2Button from "./Oauth2LoginButton";
 import { saveAuth } from "@/lib/auth/authStorage";
 
 interface LoginFormProps {
