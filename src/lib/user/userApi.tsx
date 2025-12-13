@@ -1,6 +1,6 @@
 import { ApiError } from "../auth/authApi";
 import { authFetch } from "../auth/authFetch";
-import { getAccessToken } from "../auth/authStorage";
+import { getAccessToken, MeUser } from "../auth/authStorage";
 
 interface ProfileUpdatePayload {
     name?: string;
@@ -106,5 +106,5 @@ export async function fetchMe(): Promise<UserInfoResponse["data"] | null> {
         throw new ApiError(body.message || "유저 정보 조회 실패");
     }
 
-    return body.data;
+    return body.data as MeUser;
 }

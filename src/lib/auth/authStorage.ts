@@ -1,3 +1,5 @@
+import { JoinedProject } from "../user/userApi";
+
 const ACCESS_TOKEN_KEY = "accessToken";
 const USER_KEY = "user";
 
@@ -6,6 +8,10 @@ export interface AuthUser {
     email: string;
     name: string;
     profileImageUrl: string | null;
+}
+
+export interface MeUser extends AuthUser {
+  joinedProjects: JoinedProject[];
 }
 
 // 토큰과 사용자 저장

@@ -4,53 +4,18 @@ import { useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore";
-import { ApiError, loginRequest } from "@/lib/auth/authApi";
-import {
-    useMutation,
-    QueryClient,
-    useQueryClient,
-} from "@tanstack/react-query";
-import Oauth2Button from "./Oauth2Button";
-import { saveAuth } from "@/lib/auth/authStorage";
+import Oauth2LoginButton from "./Oauth2LoginButton";
+import { useLogin } from "@/lib/auth/useLogin";
 
 interface LoginFormProps {
     isVisible: boolean;
 }
 
 export default function LoginForm({ isVisible }: LoginFormProps) {
-    const router = useRouter();
-    const setAuth = useAuthStore((state) => state.setAuth);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const queryClient = useQueryClient();
-
-    const loginMutation = useMutation({
-        mutationFn: loginRequest,
-        onSuccess: (data) => {
-            const { accessToken, user } = data.data;
-
-            saveAuth(accessToken, user);
-            setAuth(accessToken, user);
-            queryClient.setQueryData(["me"], user);
-            router.replace("/");
-            router.refresh();
-        },
-        onError: (error: ApiError) => {
-            const status = error.status;
-
-            if (status === 400) {
-                toast.error("잘못된 요청입니다");
-            } else if (status === 401) {
-                toast.error("이메일 또는 비밀번호가 일치하지 않습니다");
-            } else if (status === 500) {
-                toast.error("네트워크 오류가 발생했습니다");
-            } else {
-                toast.error(error.message || "로그인 중 오류가 발생했습니다.");
-            }
-        },
-    });
+    const loginMutation = useLogin();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,7 +90,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                         </div>
                     </div>
 
-                    <Oauth2Button />
+                    <Oauth2LoginButton />
                 </div>
             </div>
         </div>

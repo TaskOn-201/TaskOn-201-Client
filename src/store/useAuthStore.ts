@@ -3,8 +3,8 @@ import {
     getAccessToken,
     getAuthUser,
     saveAuth,
+    clearAuth as clearAuthStorage
 } from "@/lib/auth/authStorage";
-import { clearAuth } from "../lib/auth/authStorage";
 import { create } from "zustand";
 
 interface AuthState {
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
     },
     clearAuth: () => {
-        clearAuth();
+        clearAuthStorage();
         set({
             user: null,
             accessToken: null,

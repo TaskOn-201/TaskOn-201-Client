@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { isValidPassword } from "@/lib/auth/validation";
 
 export default function ChangePasswordSection() {
     const router = useRouter();
@@ -61,11 +62,9 @@ export default function ChangePasswordSection() {
             setIsDialogOpen(true);
             return;
         }
-        const passwordPattern =
-            /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{14,}$/;
         if (
-            !passwordPattern.test(newPassword) ||
-            !passwordPattern.test(confirmPassword)
+            !isValidPassword(newPassword) ||
+            !isValidPassword(confirmPassword)
         ) {
             toast.error(
                 "비밀번호는 14자 이상이며, 대문자/특수문자를 각각 필수로 1개 이상 포함해야 합니다",

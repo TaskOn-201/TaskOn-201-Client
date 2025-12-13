@@ -4,33 +4,29 @@ import Button from "@/components/Button";
 import EditableProfile from "@/app/mypage/EditableProfile";
 import Input from "@/components/Input";
 import { ApiError } from "@/lib/auth/authApi";
-import { AuthUser, saveAuth } from "@/lib/auth/authStorage";
+import { AuthUser } from "@/lib/auth/authStorage";
 import { profileUpdateRequest } from "@/lib/user/userApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ProfileSectionProps {
     user: AuthUser;
-    accessToken: string | null;
-    setAuth: (token: string, user: AuthUser) => void;
 }
 
-const ProfileSection = ({
-    user,
-    accessToken,
-    setAuth,
-}: ProfileSectionProps) => {
+const ProfileSection = ({ user }: ProfileSectionProps) => {
     const [name, setName] = useState(user.name);
     const [profileImageUrl, setProfileImageUrl] = useState<File | null>(null);
     const queryClient = useQueryClient();
+    const accessToken = useAuthStore((u) => u.accessToken);
+    const setAuth = useAuthStore((u) => u.setAuth);
 
     const profileUpdateMutation = useMutation({
         mutationFn: profileUpdateRequest,
         onSuccess: (user) => {
             if (accessToken) {
                 setAuth(accessToken, user);
-                saveAuth(accessToken, user);
             }
             queryClient.setQueryData(["me"], user);
             toast.success("프로필이 성공적으로 업데이트되었습니다.");
@@ -51,6 +47,11 @@ const ProfileSection = ({
     });
 
     const handleSaveProfile = () => {
+        if (!name.trim() && !profileImageUrl) {
+            toast.error("변경할 내용을 입력해주세요.");
+            return;
+        }
+
         profileUpdateMutation.mutate({
             name: name,
             profileImageUrl: profileImageUrl,
