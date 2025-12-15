@@ -1,47 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore";
-import { ApiError, loginRequest } from "@/lib/auth/authApi";
-import { useMutation } from "@tanstack/react-query";
+import Oauth2LoginButton from "./Oauth2LoginButton";
+import { useLogin } from "@/lib/auth/useLogin";
 
 interface LoginFormProps {
     isVisible: boolean;
 }
 
 export default function LoginForm({ isVisible }: LoginFormProps) {
-    const router = useRouter();
-    const setAuth = useAuthStore((state) => state.setAuth);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
-    const loginMutation = useMutation({
-        mutationFn: loginRequest,
-        onSuccess: (data) => {
-            const { accessToken, user } = data.data;
-
-            setAuth(accessToken, user);
-            router.replace("/");
-        },
-        onError: (error: ApiError) => {
-            const status = error.status;
-
-            if (status === 400) {
-                toast.error("잘못된 요청입니다");
-            } else if (status === 401) {
-                toast.error("이메일 또는 비밀번호가 일치하지 않습니다");
-            } else if (status === 500) {
-                toast.error("네트워크 오류가 발생했습니다");
-            } else {
-                toast.error(error.message || "로그인 중 오류가 발생했습니다.");
-            }
-        },
-    });
+    const loginMutation = useLogin();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,10 +26,6 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
         }
 
         loginMutation.mutate({ email, password });
-    };
-
-    const handleKakaoLogin = () => {
-        console.log("Kakao Login");
     };
 
     return (
@@ -78,7 +48,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                     className="space-y-4 sm:space-y-5"
                 >
                     <Input
-                        label="Email"
+                        label="이메일"
                         type="email"
                         placeholder="이메일을 입력하세요"
                         value={email}
@@ -88,7 +58,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                     />
 
                     <Input
-                        label="Password"
+                        label="비밀번호"
                         type="password"
                         placeholder="비밀번호를 입력하세요"
                         value={password}
@@ -120,22 +90,7 @@ export default function LoginForm({ isVisible }: LoginFormProps) {
                         </div>
                     </div>
 
-                    <div className="flex justify-center">
-                        <button
-                            type="button"
-                            onClick={handleKakaoLogin}
-                            className="mt-6 max-w-xs hover:opacity-90 transition-opacity cursor-pointer"
-                        >
-                            <Image
-                                src="/kakao_login_large_wide.png"
-                                alt="카카오 로그인"
-                                width={300}
-                                height={90}
-                                className="w-full h-auto"
-                                priority
-                            />
-                        </button>
-                    </div>
+                    <Oauth2LoginButton />
                 </div>
             </div>
         </div>

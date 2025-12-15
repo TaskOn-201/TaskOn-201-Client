@@ -13,13 +13,23 @@ async function fetchToken(
     options: RequestInit,
     token: string | null
 ) {
-    return await fetch(`${API_BASE_URL}${url}`, {
+    // FormData 인지 확인
+    const isFormData = options.body instanceof FormData;
+
+    // Headers 내장 클래스 사용
+    const headers = new Headers(options.headers);
+
+    if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+    // FormData 가 없고 Content-Type 없으면 application/json 으로 고정
+    if (!isFormData && !headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
+
+    return await fetch(`${API_BASE_URL}${url}`, { 
         ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...(options.headers || {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers,
         credentials: "include",
     });
 }

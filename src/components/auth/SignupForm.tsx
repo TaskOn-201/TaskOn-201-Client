@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { ApiError, checkEmailRequest, signupRequest } from "@/lib/auth/authApi";
+import Oauth2Button from "./Oauth2LoginButton";
+import { isValidEmail, isValidPassword } from "@/lib/auth/validation";
 
 interface SignupFormProps {
     isVisible: boolean;
 }
 
 export default function SignupForm({ isVisible }: SignupFormProps) {
-    const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [isEmailCheck, setIsEmailCheck] = useState(false);
@@ -26,12 +25,20 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         mutationFn: signupRequest,
         onSuccess: () => {
             toast.success("회원가입이 완료됐습니다, 로그인을 해주세요");
-            router.replace("/login");
+            setTimeout(() => {
+                if (typeof window !== "undefined") {
+                    window.location.href = "/login";
+                }
+            }, 1500);
         },
         onError: (error: ApiError) => {
             const status = error.status;
             if (status === 400) {
-                toast.error(error.data || error.message || "입력값 검증에 실패했습니다. 정보를 다시 확인해주세요.");
+                toast.error(
+                    error.data ||
+                        error.message ||
+                        "입력값 검증에 실패했습니다. 정보를 다시 확인해주세요."
+                );
             } else {
                 toast.error("회원가입에 실패하였습니다");
             }
@@ -41,13 +48,11 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const passwordPattern =
-            /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{14,}$/;
         if (!isEmailCheck) {
             toast.error("이메일 중복 확인 후 진행해주세요");
             return;
         }
-        if (!passwordPattern.test(password)) {
+        if (!isValidPassword(password)) {
             toast.error(
                 "비밀번호는 14자 이상이며, 대문자/특수문자를 각각 필수로 1개 이상 포함해야 합니다"
             );
@@ -55,10 +60,6 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         }
 
         signupMutation.mutate({ name, email, password, passwordCheck });
-    };
-
-    const handleKakaoLogin = () => {
-        console.log("Kakao Login");
     };
 
     const emailCheckMutation = useMutation({
@@ -79,15 +80,13 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
     });
 
     const handleEmailCheck = async () => {
-        const emailPattern =
-            /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-za-z0-9\-]+/;
         setIsEmailCheck(false);
 
         if (!email) {
             toast.error("이메일을 입력해주세요");
             return;
         }
-        if (emailPattern.test(email) === false) {
+        if (!isValidEmail(email)) {
             toast.info("이메일 양식에 맞게 입력해주세요");
             return;
         }
@@ -214,11 +213,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
                             size="md"
                             fullWidth
                             className="mt-6"
-                            disabled={
-                                !agreedToTerms ||
-                                !name ||
-                                !password
-                            }
+                            disabled={!agreedToTerms || !name || !password}
                         />
                     </form>
 
@@ -234,22 +229,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
                             </div>
                         </div>
 
-                        <div className="flex justify-center">
-                            <button
-                                type="button"
-                                onClick={handleKakaoLogin}
-                                className="mt-6 max-w-xs hover:opacity-90 transition-opacity cursor-pointer"
-                            >
-                                <Image
-                                    src="/kakao_login_large_wide.png"
-                                    alt="카카오 로그인"
-                                    width={300}
-                                    height={90}
-                                    className="w-full h-auto"
-                                    priority
-                                />
-                            </button>
-                        </div>
+                        <Oauth2Button />
                     </div>
                 </div>
             </div>

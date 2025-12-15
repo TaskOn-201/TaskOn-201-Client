@@ -1,18 +1,34 @@
+"use client";
+
 import PageHeader from "@/components/PageHeader";
 import ChangePasswordSection from "./ChangePasswordSection";
 import DeactivateAccountSection from "./DeactivateAccountSection";
 import ProfileSection from "./ProfileSection";
+import { useRouter } from "next/navigation";
+import useMe from "@/lib/user/useMe";
 
 export default function MyPage() {
-  return (
-    <div className="min-h-screen">
-      <PageHeader left="Settings" />
+    const { data: user, isLoading } = useMe();
+    const router = useRouter();
 
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <ProfileSection />
-        <ChangePasswordSection />
-        <DeactivateAccountSection />
-      </div>
-    </div>
-  );
+    if (isLoading) {
+        return <div>불러오는 중...</div>;
+    }
+
+    if (!user) {
+        router.replace("/login");
+        return null;
+    }
+
+    return (
+        <div className="min-h-screen">
+            <PageHeader left="Settings" />
+
+            <div className="max-w-4xl mx-auto p-6 space-y-6">
+                <ProfileSection user={user} />
+                <ChangePasswordSection />
+                <DeactivateAccountSection />
+            </div>
+        </div>
+    );
 }

@@ -15,39 +15,36 @@ import { cn } from "@/lib/utils";
 import Button from "./Button";
 import { logoutRequest } from "@/lib/auth/authApi";
 import { toast } from "sonner";
+import useMe from "@/lib/user/useMe";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface HeaderProps {
     className?: string;
 }
 
 const Header = ({ className }: HeaderProps) => {
-    const { user, isAuthenticated, clearAuth } = useAuthStore();
+    const { clearAuth } = useAuthStore();
+    const { data: me } = useMe();
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const logoutHandler = async () => {
         try {
-            const res = await logoutRequest();
-
-            // 결과가 Error 리턴하면 다시 확인
-            if (!(res instanceof Response)) {
-                clearAuth();
-                router.replace("/login");
-                return;
-            }
-
-            if (res.status === 200) {
-                clearAuth();
-                router.replace("/");
-            } else if (res.status === 401) {
-                clearAuth();
-                router.replace("/login");
-            } else {
-                toast.error("로그아웃 실패하였습니다.");
-            }
+            await logoutRequest();
         } catch (err) {
             console.error(err);
+            toast.error("로그아웃 중 오류가 발생했습니다.");
+        } finally {
+            clearAuth();
+            queryClient.setQueryData(["me"], null);
+            queryClient.removeQueries({ queryKey: ["me"], exact: false });
+
+            router.replace("/");
+            router.refresh();
         }
     };
+
+    const isLoggedIn = !!me;
 
     return (
         <header
@@ -65,21 +62,20 @@ const Header = ({ className }: HeaderProps) => {
                 />
             </div>
             <div className="w-fit">
-                {isAuthenticated ? (
+                {isLoggedIn ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex gap-3 py-2 cursor-pointer items-center">
                             {/* 사용자 프로필 */}
-                            {isAuthenticated &&
-                            user?.profileImageUrl !== null ? (
+                            {me.profileImageUrl !== null ? (
                                 <Profile
                                     size="sm"
-                                    imageUrl={user?.profileImageUrl}
+                                    imageUrl={me.profileImageUrl}
                                 />
                             ) : (
                                 <Profile size="sm" />
                             )}
                             <span className="flex flex-col justify-center text-main2">
-                                {isAuthenticated ? user?.name : "로딩..."}
+                                {me.name}
                             </span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="min-w-6" align="center">

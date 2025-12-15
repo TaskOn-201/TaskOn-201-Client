@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ProjectTeamModalProps } from "./type";
 import ProjectTeamModalSidebar from "./ProjectTeamModalSidebar";
@@ -20,6 +20,13 @@ export default function ProjectTeamModal({
   const [activeTabId, setActiveTabId] = useState(
     defaultTabId || tabs[0]?.id || ""
   );
+
+  // 모달이 열릴 때마다 defaultTabId로 리셋
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTabId(defaultTabId || tabs[0]?.id || "");
+    }
+  }, [isOpen, defaultTabId, tabs]);
 
   // 활성 탭 찾기
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
