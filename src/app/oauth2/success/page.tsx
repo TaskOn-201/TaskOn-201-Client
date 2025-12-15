@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { saveAuth } from "@/lib/auth/authStorage";
 import { useAuthStore } from "@/store/useAuthStore";
 
-const OAuth2SuccessPage = () => {
+const OAuth2SuccessContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const setAuth = useAuthStore((state) => state.setAuth);
@@ -66,6 +66,20 @@ const OAuth2SuccessPage = () => {
             <p>소셜 로그인 처리 중입니다...</p>
         </div>
     );
-}
+};
+
+const OAuth2SuccessPage = () => {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                    <p>로딩 중...</p>
+                </div>
+            }
+        >
+            <OAuth2SuccessContent />
+        </Suspense>
+    );
+};
 
 export default OAuth2SuccessPage;
