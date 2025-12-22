@@ -27,13 +27,15 @@ export interface JoinedProject {
 export interface UserInfoResponse {
     statusCode: number;
     message: string;
-    data: {
-        userId: number;
-        email: string;
-        name: string;
-        profileImageUrl: string | null;
-        joinedProjects: JoinedProject[];
-    };
+    data: UserInfoData;
+}
+
+export interface UserInfoData {
+    userId: number;
+    email: string;
+    name: string;
+    profileImageUrl: string | null;
+    joinedProjects: JoinedProject[];
 }
 
 export async function passwordChangeRequest({
