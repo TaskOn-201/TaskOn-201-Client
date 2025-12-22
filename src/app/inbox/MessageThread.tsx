@@ -1,7 +1,11 @@
+"use client";
+
 import { ChatMessage } from "./type";
 import useMe from "@/lib/user/useMe";
 import Profile from "@/components/Profile";
 import { formatChatRoomTime } from "@/lib/chat/chatUtils";
+import { useState } from "react";
+import UserProfileModal from "@/components/chat/ChatUserProfileModal";
 
 interface MessageThreadProps {
     messages: ChatMessage[];
@@ -9,6 +13,19 @@ interface MessageThreadProps {
 
 const MessageThread = ({ messages }: MessageThreadProps) => {
     const { data: me } = useMe();
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [targetUserId, setTargetUserId] = useState<number | null>(null);
+
+    const openProfile = (userId?: number | null) => {
+        if (!userId) return; // senderId 없으면 무시
+        setTargetUserId(userId);
+        setProfileOpen(true);
+    };
+
+    const closeProfile = () => {
+        setProfileOpen(false);
+        setTargetUserId(null);
+    };
 
     return (
         <div className="flex flex-col min-h-full justify-end">
@@ -27,10 +44,18 @@ const MessageThread = ({ messages }: MessageThreadProps) => {
                         {/* 상대방 */}
                         {!isMe && (
                             <div className="flex items-start gap-2 max-w-[70%]">
-                                <Profile
-                                    className="w-8 h-8 shrink-0 text-sm"
-                                    userName={initial}
-                                    imageUrl={msg.sender?.profileImageUrl}
+                                <button onClick={() => openProfile(msg.sender?.userId)}>
+                                    <Profile
+                                        className="w-8 h-8 shrink-0 text-sm"
+                                        userName={initial}
+                                        imageUrl={msg.sender?.profileImageUrl}
+                                    />
+                                </button>
+
+                                <UserProfileModal
+                                    isOpen={profileOpen}
+                                    onClose={closeProfile}
+                                    userId={targetUserId}
                                 />
 
                                 <div className="flex flex-col items-start">

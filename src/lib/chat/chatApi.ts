@@ -2,6 +2,7 @@ import { ChatMessage, ChatRoomData } from "@/app/inbox/type";
 import { ApiError } from "../auth/authApi";
 import { authFetch } from "../auth/authFetch";
 import { TaskPriority } from "../task/taskApi";
+import { JoinedProject } from "../user/userApi";
 
 export interface ChatUser {
     userId: number;
@@ -54,6 +55,20 @@ export interface ChatSearchTask {
 export interface ChatSearchData {
     users: ChatSearchUser[];
     tasks: ChatSearchTask[];
+}
+
+export interface ChatUserProfileResponse {
+    statusCode: number;
+    message: string;
+    data: ChatUserProfileData;
+}
+
+export interface ChatUserProfileData {
+    userId: number;
+    email: string;
+    name: string;
+    profileImageUrl: string | null;
+    projects: JoinedProject[];
 }
 
 // 메세지 리스트 조회
@@ -150,4 +165,22 @@ export async function searchChat(keyword: string): Promise<ChatRoomData[]> {
     }
 
     return body.data.chatRooms;
+}
+
+export async function getChatUserProfile(
+    userId: number
+): Promise<ChatUserProfileData> {
+    const res = await authFetch(`/api/users/${userId}`, { method: "GET" });
+
+    const body: ChatUserProfileResponse = await res.json();
+
+    if (!res.ok) {
+        const err = new ApiError(body.message || "유저 프로필 정보 조회 실패");
+        err.status = res.status;
+        err.data = body.message;
+        err.code = body.statusCode;
+        throw err;
+    }
+
+    return body.data;
 }
