@@ -1,3 +1,4 @@
+import { authFetch } from "./authFetch";
 import { AuthUser, getAccessToken } from "./authStorage";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -34,6 +35,12 @@ export class ApiError extends Error {
     status?: number;
     data?: string;
     code?: number;
+}
+
+interface deleteResponse {
+    statusCode: number;
+    message: string;
+    data: null;
 }
 
 export async function loginRequest({
@@ -115,4 +122,18 @@ export async function logoutRequest() {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         credentials: "include",
     });
+}
+
+export async function userDeleteRequest() {
+    const res = await authFetch("/api/users/me", { method: "DELETE" });
+
+    const body: deleteResponse = await res.json();
+
+    if (!res.ok || body.statusCode !== 200) {
+        const error = new ApiError(body?.message ?? "회원 탈퇴 실패");
+        error.status = res.status;
+        throw error;
+    }
+
+    return body;
 }
