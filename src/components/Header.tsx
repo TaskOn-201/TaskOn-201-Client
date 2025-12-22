@@ -70,9 +70,10 @@ const Header = ({ className }: HeaderProps) => {
                                 <Profile
                                     size="sm"
                                     imageUrl={me.profileImageUrl}
+                                    userName={me.name.charAt(0)}
                                 />
                             ) : (
-                                <Profile size="sm" />
+                                <Profile size="sm" userName={me.name.charAt(0)} className="text-sm" />
                             )}
                             <span className="flex flex-col justify-center text-main2">
                                 {me.name}

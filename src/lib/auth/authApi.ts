@@ -33,6 +33,7 @@ interface SignupPayload {
 export class ApiError extends Error {
     status?: number;
     data?: string;
+    code?: number;
 }
 
 export async function loginRequest({

@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/", "/login", "/signup","/oauth2/success"];
 
 export function middleware(request: NextRequest) {
+
   const refreshToken = request.cookies.get("refreshToken");
   const { pathname } = request.nextUrl;
 

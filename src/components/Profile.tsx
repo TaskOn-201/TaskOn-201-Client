@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface ProfileProps {
-  imageUrl?: string;
+  imageUrl?: string | null;
   userName?: string;
   fallbackText?: string;
   size?: "sm" | "md" | "lg";

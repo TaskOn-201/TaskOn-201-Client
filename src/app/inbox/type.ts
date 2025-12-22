@@ -1,26 +1,34 @@
-export interface Participant {
-  id: number;
-  name: string;
-  avatar: string;
+export type chatType = "PROJECT_GROUP" | "TASK_GROUP" | "PERSONAL";
+
+interface ParticipantsData {
+    userId: number;
+    name: string;
+    profileImageUrl: string;
 }
 
-export interface Message {
-  id: number;
-  sender: string;
-  avatar: string;
-  subject: string;
-  preview: string;
+export interface ChatRoomData {
+    chatRoomId: number;
+    roomName: string;
+    chatType: chatType;
+    participants: ParticipantsData[];
+    lastMessage: string | null;
+    lastMessageTime: string | null;
+    lastMessageAt: string | null;
+    unreadCount: number;
 
-  time: string;
-  isRead: boolean;
-  participants: Participant[]; // 채팅 참여자 목록
+    // 채팅 검색 시
+    relatedTaskId?: number;
 }
 
-export interface ThreadMessage {
-  id: number;
-  sender: string;
-  avatar: string;
-  content: string;
-  time: string;
-  isCurrentUser: boolean;
+export interface ChatMessage {
+    messageId: number;
+    chatRoomId: number;
+    sender: {
+        userId: number;
+        name: string;
+        profileImageUrl?: string | null;
+    };
+    content: string;
+    sentTime: string;
+    displayTime: string;
 }
