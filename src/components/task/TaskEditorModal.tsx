@@ -23,8 +23,10 @@ import {
 } from "@/lib/project/projectApi";
 import {
   createTaskRequest,
+  updateTaskRequest,
   TaskStatus,
   TaskPriority,
+  TaskDetailData,
 } from "@/lib/task/taskApi";
 import { toast } from "sonner";
 
@@ -34,6 +36,10 @@ interface TaskEditorModalProps {
   projectId: number;
   onSuccess?: () => void;
   defaultStatus?: TaskStatus;
+  // 수정 모드용 props
+  mode?: "create" | "edit";
+  taskId?: number;
+  initialData?: TaskDetailData;
 }
 
 const TaskEditorModal = ({
@@ -42,7 +48,12 @@ const TaskEditorModal = ({
   projectId,
   onSuccess,
   defaultStatus,
+  mode = "create",
+  taskId,
+  initialData,
 }: TaskEditorModalProps) => {
+  const isEditMode = mode === "edit";
+
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<TaskStatus | undefined>(defaultStatus);
   const [priority, setPriority] = useState<TaskPriority | undefined>(undefined);
@@ -56,6 +67,19 @@ const TaskEditorModal = ({
   const [leader, setLeader] = useState<ProjectMember | null>(null);
   const [members, setMembers] = useState<Participant[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
+
+  // 수정 모드일 때 초기 데이터 설정
+  useEffect(() => {
+    if (isOpen && isEditMode && initialData) {
+      setTitle(initialData.title);
+      setStatus(initialData.status);
+      setPriority(initialData.priority);
+      setParticipantIds(initialData.participants.map((p) => p.userId));
+      setStartDate(initialData.startDate ?? "");
+      setDueDate(initialData.dueDate ?? "");
+      setDescription(initialData.description ?? "");
+    }
+  }, [isOpen, isEditMode, initialData]);
 
   // 프로젝트 멤버 조회
   useEffect(() => {
@@ -123,23 +147,42 @@ const TaskEditorModal = ({
 
     setIsLoading(true);
     try {
-      await createTaskRequest(projectId, {
-        title: title.trim(),
-        status: status!,
-        priority: priority!,
-        participantIds,
-        startDate,
-        dueDate,
-        description: description.trim() || undefined,
-      });
+      if (isEditMode && taskId) {
+        // 수정 모드
+        await updateTaskRequest(projectId, taskId, {
+          title: title.trim(),
+          status: status!,
+          priority: priority!,
+          participantIds,
+          startDate,
+          dueDate,
+          description: description.trim() || undefined,
+        });
+        toast.success("Task가 수정되었습니다.");
+      } else {
+        // 생성 모드
+        await createTaskRequest(projectId, {
+          title: title.trim(),
+          status: status!,
+          priority: priority!,
+          participantIds,
+          startDate,
+          dueDate,
+          description: description.trim() || undefined,
+        });
+        toast.success("Task가 생성되었습니다.");
+      }
 
-      toast.success("Task가 생성되었습니다.");
       resetForm();
       onSuccess?.();
       onClose();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Task 생성에 실패했습니다.";
+        error instanceof Error
+          ? error.message
+          : isEditMode
+          ? "Task 수정에 실패했습니다."
+          : "Task 생성에 실패했습니다.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -270,7 +313,7 @@ const TaskEditorModal = ({
             type="submit"
             icon={<PenLine size={14} />}
             variant={isFormValid && !isLoading ? "primary" : "disable"}
-            label={isLoading ? "저장 중..." : "저장"}
+            label={isLoading ? "저장 중..." : isEditMode ? "수정" : "저장"}
             onClick={submitHandler}
             disabled={!isFormValid || isLoading}
           />

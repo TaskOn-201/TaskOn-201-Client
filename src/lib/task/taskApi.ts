@@ -174,6 +174,46 @@ export async function getTaskDetail(
   return body as GetTaskDetailResponse;
 }
 
+// Task 수정 Payload
+export interface UpdateTaskPayload {
+  title?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  participantIds?: number[];
+  startDate?: string;
+  dueDate?: string;
+  description?: string;
+}
+
+interface UpdateTaskResponse {
+  statusCode: number;
+  message: string;
+  data: TaskData;
+}
+
+// Task 수정
+export async function updateTaskRequest(
+  projectId: number,
+  taskId: number,
+  payload: UpdateTaskPayload
+): Promise<UpdateTaskResponse> {
+  const res = await authFetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new TaskApiError(body.message || "Task 수정 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as UpdateTaskResponse;
+}
+
 //Task 삭제
 export async function deleteTaskRequest(
   projectId: number,
@@ -190,4 +230,42 @@ export async function deleteTaskRequest(
     throw error;
   }
   return body as DeleteTaskResponse;
+}
+
+// Task 상태 변경 응답 타입
+interface UpdateTaskStatusResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    taskId: number;
+    projectId: number;
+    status: TaskStatus;
+    updatedAt: string;
+  };
+}
+
+// Task 상태 변경 (드래그 앤 드롭용)
+export async function updateTaskStatus(
+  projectId: number,
+  taskId: number,
+  status: TaskStatus
+): Promise<UpdateTaskStatusResponse> {
+  const res = await authFetch(
+    `/api/projects/${projectId}/tasks/${taskId}/status`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const error = new TaskApiError(body.message || "Task 상태 변경 실패");
+    error.status = res.status;
+    error.data = body.data;
+    throw error;
+  }
+
+  return body as UpdateTaskStatusResponse;
 }

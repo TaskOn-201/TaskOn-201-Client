@@ -6,13 +6,32 @@ import PageHeader from "@/components/PageHeader";
 import VerticalDropbox from "@/components/VerticalDropbox";
 import StateSection from "./StateSection";
 import { StateDataProps } from "./type";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import TaskCreateModal from "@/components/task/TaskEditorModal";
 import { useProjectStore } from "@/store/useProjectStore";
-import { useQuery } from "@tanstack/react-query";
-import { getBoardTasks, BoardTaskItem } from "@/lib/task/taskApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getBoardTasks,
+  BoardTaskItem,
+  updateTaskStatus,
+  TaskStatus,
+} from "@/lib/task/taskApi";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { toast } from "sonner";
 
-const options = [
+const filterOptions = [
+  {
+    label: "전체",
+    value: "all",
+  },
   {
     label: "제목",
     value: "title",
@@ -22,8 +41,8 @@ const options = [
     value: "priority",
   },
   {
-    label: "사용자명",
-    value: "name",
+    label: "담당자",
+    value: "assignee",
   },
 ];
 
@@ -35,7 +54,11 @@ type BoardData = {
 
 const Board = () => {
   const [isTaskEditorModalOpen, setIsTaskEditorModalOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [activeTask, setActiveTask] = useState<StateDataProps | null>(null);
   const { currentProject } = useProjectStore();
+  const queryClient = useQueryClient();
 
   // Task 보드 조회
   const {
@@ -49,6 +72,126 @@ const Board = () => {
     queryFn: () => getBoardTasks(currentProject!.projectId),
     enabled: !!currentProject?.projectId,
   });
+
+  // 드래그 센서 설정 (클릭과 드래그 구분)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px 이상 이동해야 드래그 시작
+      },
+    })
+  );
+
+  // 태스크 ID로 현재 상태 찾기
+  const getTaskStatus = (taskId: number): TaskStatus | null => {
+    if (tasksResponse?.data?.todo?.find((t) => t.taskId === taskId))
+      return "TODO";
+    if (tasksResponse?.data?.inProgress?.find((t) => t.taskId === taskId))
+      return "IN_PROGRESS";
+    if (tasksResponse?.data?.completed?.find((t) => t.taskId === taskId))
+      return "COMPLETED";
+    return null;
+  };
+
+  // 태스크 ID로 태스크 찾기
+  const findTaskById = (taskId: number): BoardTaskItem | undefined => {
+    return (
+      tasksResponse?.data?.todo?.find((t) => t.taskId === taskId) ||
+      tasksResponse?.data?.inProgress?.find((t) => t.taskId === taskId) ||
+      tasksResponse?.data?.completed?.find((t) => t.taskId === taskId)
+    );
+  };
+
+  // 상태 변경 뮤테이션
+  const statusMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: number; status: TaskStatus }) =>
+      updateTaskStatus(currentProject!.projectId, taskId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["boardTasks", currentProject?.projectId],
+      });
+      toast.success("태스크 상태가 변경되었습니다.");
+    },
+    onError: (error: Error) => {
+      console.error("상태 변경 실패:", error);
+      // 서버에서 반환한 에러 메시지 표시 (없으면 기본 메시지)
+      toast.error(error.message || "상태 변경에 실패했습니다.");
+      // 실패 시 데이터 리페치 (낙관적 업데이트 롤백)
+      queryClient.invalidateQueries({
+        queryKey: ["boardTasks", currentProject?.projectId],
+      });
+    },
+  });
+
+  // 드래그 시작 핸들러
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const taskData = active.data.current?.task as StateDataProps;
+    if (taskData) {
+      setActiveTask(taskData);
+    }
+  };
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+
+    if (!over) return;
+
+    const taskId = active.data.current?.taskId as number;
+    const newStatus = over.id as TaskStatus;
+
+    // 현재 태스크의 상태 확인
+    const currentTask = findTaskById(taskId);
+    if (!currentTask) return;
+
+    // 같은 상태로 드롭하면 무시
+    const currentStatus = getTaskStatus(taskId);
+    if (currentStatus === newStatus) return;
+
+    // 낙관적 업데이트를 위해 캐시 직접 수정
+    queryClient.setQueryData(
+      ["boardTasks", currentProject?.projectId],
+      (
+        oldData: ReturnType<typeof getBoardTasks> extends Promise<infer T>
+          ? T
+          : never
+      ) => {
+        if (!oldData?.data) return oldData;
+
+        const newData = { ...oldData, data: { ...oldData.data } };
+        const statusKeys: Record<TaskStatus, keyof typeof newData.data> = {
+          TODO: "todo",
+          IN_PROGRESS: "inProgress",
+          COMPLETED: "completed",
+        };
+
+        // 기존 상태에서 제거
+        const sourceKey = statusKeys[currentStatus as TaskStatus];
+        newData.data[sourceKey] = newData.data[sourceKey].filter(
+          (t: BoardTaskItem) => t.taskId !== taskId
+        );
+
+        // 새 상태에 추가
+        const destKey = statusKeys[newStatus];
+        const taskToMove = tasksResponse?.data?.[sourceKey]?.find(
+          (t: BoardTaskItem) => t.taskId === taskId
+        );
+        if (taskToMove) {
+          newData.data[destKey] = [
+            ...newData.data[destKey],
+            { ...taskToMove, status: newStatus },
+          ];
+        }
+
+        return newData;
+      }
+    );
+
+    // API 호출
+    statusMutation.mutate({ taskId, status: newStatus });
+  };
 
   // 디버깅용: 에러 발생 시 콘솔 출력
   if (isError) {
@@ -73,11 +216,59 @@ const Board = () => {
     commentCount: task.commentCount,
   });
 
-  // API 응답 데이터 (이미 상태별로 분류됨)
-  const boardData: BoardData = {
-    todo: tasksResponse?.data?.todo?.map(toStateData) ?? [],
-    inProgress: tasksResponse?.data?.inProgress?.map(toStateData) ?? [],
-    completed: tasksResponse?.data?.completed?.map(toStateData) ?? [],
+  // 검색 필터 적용된 boardData
+  const boardData: BoardData = useMemo(() => {
+    const todoTasks = tasksResponse?.data?.todo?.map(toStateData) ?? [];
+    const inProgressTasks =
+      tasksResponse?.data?.inProgress?.map(toStateData) ?? [];
+    const completedTasks =
+      tasksResponse?.data?.completed?.map(toStateData) ?? [];
+
+    // 검색 필터 함수
+    const filterTasks = (tasks: StateDataProps[]) => {
+      if (!searchValue) return tasks;
+      const lowerSearch = searchValue.toLowerCase();
+
+      return tasks.filter((task) => {
+        switch (filterType) {
+          case "title":
+            return task.title.toLowerCase().includes(lowerSearch);
+          case "priority":
+            return task.label.labelName.toLowerCase().includes(lowerSearch);
+          case "assignee":
+            // "unassigned" 또는 "미배정" 검색 시 미배정 태스크 반환
+            if (lowerSearch === "unassigned" || lowerSearch === "미배정") {
+              return (
+                !task.assigneeProfileImageUrl &&
+                task.participantProfileImageUrls.length === 0
+              );
+            }
+            // 그 외에는 담당자가 있는 태스크만 반환
+            return (
+              !!task.assigneeProfileImageUrl ||
+              task.participantProfileImageUrls.length > 0
+            );
+          case "all":
+          default:
+            // 전체: 제목 또는 중요도에서 검색
+            return (
+              task.title.toLowerCase().includes(lowerSearch) ||
+              task.label.labelName.toLowerCase().includes(lowerSearch)
+            );
+        }
+      });
+    };
+
+    return {
+      todo: filterTasks(todoTasks),
+      inProgress: filterTasks(inProgressTasks),
+      completed: filterTasks(completedTasks),
+    };
+  }, [tasksResponse, searchValue, filterType]);
+
+  // 검색 핸들러
+  const handleSearch = (value: string) => {
+    setSearchValue(value);
   };
 
   return (
@@ -89,10 +280,18 @@ const Board = () => {
           center={
             <div className="flex items-center">
               <VerticalDropbox
-                options={options}
-                className="mr-2 py-4.5 size-26"
+                options={filterOptions}
+                checkValue={filterType}
+                onChange={setFilterType}
+                className="mr-2 py-4.5 w-28"
               />
-              <Input search />
+              <Input
+                search
+                placeholder="Search"
+                className="w-64"
+                onSearch={handleSearch}
+                onClear={() => setSearchValue("")}
+              />
             </div>
           }
           right={
@@ -124,11 +323,37 @@ const Board = () => {
               </button>
             </div>
           ) : (
-            <>
-              <StateSection status="To do" tasks={boardData.todo} />
-              <StateSection status="In Progress" tasks={boardData.inProgress} />
-              <StateSection status="Completed" tasks={boardData.completed} />
-            </>
+            <DndContext
+              sensors={sensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <StateSection
+                status="To do"
+                statusKey="TODO"
+                tasks={boardData.todo}
+                onTaskCreate={() => setIsTaskEditorModalOpen(true)}
+              />
+              <StateSection
+                status="In Progress"
+                statusKey="IN_PROGRESS"
+                tasks={boardData.inProgress}
+                onTaskCreate={() => setIsTaskEditorModalOpen(true)}
+              />
+              <StateSection
+                status="Completed"
+                statusKey="COMPLETED"
+                tasks={boardData.completed}
+                onTaskCreate={() => setIsTaskEditorModalOpen(true)}
+              />
+              <DragOverlay>
+                {activeTask ? (
+                  <div className="bg-white rounded-lg shadow-xl p-3 border-2 border-blue-400 opacity-90">
+                    <p className="font-medium">{activeTask.title}</p>
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           )}
         </div>
       </main>

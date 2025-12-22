@@ -3,14 +3,20 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import Label from "@/components/Label";
 import Profile from "@/components/Profile";
-import { MessageSquareText, Plus } from "lucide-react";
+import { MessageSquareText, Plus, GripVertical } from "lucide-react";
 import { StateDataProps } from "./type";
 import TaskDetailModal from "@/components/task/TaskViewerModal";
 import { useState } from "react";
 import { LABEL_OPTIONS } from "@/components/task/labelOptions";
 import { useProjectStore } from "@/store/useProjectStore";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
-const StateTaskCard = (task: StateDataProps) => {
+interface StateTaskCardProps extends StateDataProps {
+  isDragging?: boolean;
+}
+
+const StateTaskCard = (task: StateTaskCardProps) => {
   const {
     taskId,
     title,
@@ -22,17 +28,42 @@ const StateTaskCard = (task: StateDataProps) => {
   const [isTaskViewerModalOpen, setIsTaskViewerModalOpen] = useState(false);
   const { currentProject } = useProjectStore();
 
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `task-${taskId}`,
+      data: { taskId, task },
+    });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 1,
+  };
+
   const labelData = LABEL_OPTIONS.find(
     (option) => option.value === label.labelName
   );
 
   return (
     <>
-      <li className="cursor-pointer">
+      <li
+        ref={setNodeRef}
+        style={style}
+        className={`cursor-pointer ${isDragging ? "shadow-lg" : ""}`}
+      >
         <Card
-          className="px-0 py-3 "
+          className="px-0 py-3 relative group"
           onClick={() => setIsTaskViewerModalOpen(true)}
         >
+          {/* 드래그 핸들 */}
+          <div
+            {...attributes}
+            {...listeners}
+            className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GripVertical size={16} className="text-gray-400" />
+          </div>
           <CardContent>
             <h4 className="mb-3 whitespace-nowrap overflow-hidden text-ellipsis">
               {title}
