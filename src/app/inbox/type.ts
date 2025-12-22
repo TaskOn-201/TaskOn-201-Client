@@ -25,7 +25,7 @@ export interface ChatMessage {
     chatRoomId: number;
     sender: {
         userId: number;
-        name: string;
+        name: string | null;
         profileImageUrl?: string | null;
     };
     content: string;

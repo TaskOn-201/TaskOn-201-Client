@@ -14,6 +14,8 @@ const MessageThread = ({ messages }: MessageThreadProps) => {
         <div className="flex flex-col min-h-full justify-end">
             {messages.map((msg) => {
                 const isMe = msg.sender?.userId === me?.userId;
+                const displayName = msg.sender?.name ?? "탈퇴한 사용자";
+                const initial = displayName.charAt(0);
 
                 return (
                     <div
@@ -27,13 +29,13 @@ const MessageThread = ({ messages }: MessageThreadProps) => {
                             <div className="flex items-start gap-2 max-w-[70%]">
                                 <Profile
                                     className="w-8 h-8 shrink-0 text-sm"
-                                    userName={msg.sender?.name.charAt(0)}
+                                    userName={initial}
                                     imageUrl={msg.sender?.profileImageUrl}
                                 />
 
                                 <div className="flex flex-col items-start">
                                     <span className="mb-1 text-sm text-gray5">
-                                        {msg.sender?.name}
+                                        {displayName}
                                     </span>
 
                                     <div className="bg-gray1/30 py-2.5 px-4 rounded-2xl">

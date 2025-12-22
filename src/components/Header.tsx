@@ -17,6 +17,7 @@ import { logoutRequest } from "@/lib/auth/authApi";
 import { toast } from "sonner";
 import useMe from "@/lib/user/useMe";
 import { useQueryClient } from "@tanstack/react-query";
+import { authCleanup } from "@/lib/auth/authCleanup";
 
 interface HeaderProps {
     className?: string;
@@ -30,17 +31,14 @@ const Header = ({ className }: HeaderProps) => {
 
     const logoutHandler = async () => {
         try {
-            await logoutRequest();
+            await logoutRequest(); // 서버 로그아웃
         } catch (err) {
             console.error(err);
             toast.error("로그아웃 중 오류가 발생했습니다.");
         } finally {
             clearAuth();
-            queryClient.setQueryData(["me"], null);
-            queryClient.removeQueries({ queryKey: ["me"], exact: false });
-
+            authCleanup(queryClient);
             router.replace("/");
-            router.refresh();
         }
     };
 
@@ -73,7 +71,11 @@ const Header = ({ className }: HeaderProps) => {
                                     userName={me.name.charAt(0)}
                                 />
                             ) : (
-                                <Profile size="sm" userName={me.name.charAt(0)} className="text-sm" />
+                                <Profile
+                                    size="sm"
+                                    userName={me.name.charAt(0)}
+                                    className="text-sm"
+                                />
                             )}
                             <span className="flex flex-col justify-center text-main2">
                                 {me.name}
