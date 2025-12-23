@@ -1,5 +1,6 @@
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { API_BASE_URL } from "../auth/authApi";
 
 interface CreateClientOptions {
     accessToken: string | null;
@@ -17,7 +18,7 @@ export function createStompClient(options: CreateClientOptions) {
     };
 
     const client = new Client({
-        webSocketFactory: () => new SockJS("https://api.taskon.co.kr/ws/chat"),
+        webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws/chat`),
         connectHeaders: options.accessToken
             ? { Authorization: `Bearer ${options.accessToken}` }
             : {},
