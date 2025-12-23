@@ -81,6 +81,7 @@ export interface BoardData {
     todo: BoardTaskItem[];
     inProgress: BoardTaskItem[];
     completed: BoardTaskItem[];
+    archived?: BoardTaskItem[];
 }
 
 interface GetBoardTasksResponse {
