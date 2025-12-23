@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import UserInfoModal from "../modal/UserInfoModal";
 import Button from "../Button";
 import {
-  CalendarDays,
-  PenLine,
-  Settings2,
-  Tag,
-  UserRound,
-  UserStar,
+    CalendarDays,
+    PenLine,
+    Settings2,
+    Tag,
+    UserRound,
+    UserStar,
 } from "lucide-react";
 import Label from "../Label";
 import Profile from "../Profile";
@@ -18,309 +18,327 @@ import TaskParticipantSelect from "./TaskParticipantSelect";
 import { Participant } from "../participant/type";
 import { LABEL_OPTIONS } from "@/components/task/labelOptions";
 import {
-  getProjectMembersRequest,
-  ProjectMember,
+    getProjectMembersRequest,
+    ProjectMember,
 } from "@/lib/project/projectApi";
 import {
-  createTaskRequest,
-  updateTaskRequest,
-  TaskStatus,
-  TaskPriority,
-  TaskDetailData,
+    createTaskRequest,
+    updateTaskRequest,
+    TaskStatus,
+    TaskPriority,
+    TaskDetailData,
 } from "@/lib/task/taskApi";
 import { toast } from "sonner";
+import useMe from "@/lib/user/useMe";
 
 interface TaskEditorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  projectId: number;
-  onSuccess?: () => void;
-  defaultStatus?: TaskStatus;
-  // 수정 모드용 props
-  mode?: "create" | "edit";
-  taskId?: number;
-  initialData?: TaskDetailData;
+    isOpen: boolean;
+    onClose: () => void;
+    projectId: number;
+    onSuccess?: () => void;
+    defaultStatus?: TaskStatus;
+    // 수정 모드용 props
+    mode?: "create" | "edit";
+    taskId?: number;
+    initialData?: TaskDetailData;
 }
 
 const TaskEditorModal = ({
-  isOpen,
-  onClose,
-  projectId,
-  onSuccess,
-  defaultStatus,
-  mode = "create",
-  taskId,
-  initialData,
+    isOpen,
+    onClose,
+    projectId,
+    onSuccess,
+    defaultStatus,
+    mode = "create",
+    taskId,
+    initialData,
 }: TaskEditorModalProps) => {
-  const isEditMode = mode === "edit";
+    const isEditMode = mode === "edit";
 
-  const [title, setTitle] = useState("");
-  const [status, setStatus] = useState<TaskStatus | undefined>(defaultStatus);
-  const [priority, setPriority] = useState<TaskPriority | undefined>(undefined);
-  const [participantIds, setParticipantIds] = useState<number[]>([]);
-  const [startDate, setStartDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+    const [title, setTitle] = useState("");
+    const [status, setStatus] = useState<TaskStatus | undefined>(defaultStatus);
+    const [priority, setPriority] = useState<TaskPriority | undefined>(
+        undefined
+    );
+    const [participantIds, setParticipantIds] = useState<number[]>([]);
+    const [startDate, setStartDate] = useState("");
+    const [dueDate, setDueDate] = useState("");
+    const [description, setDescription] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-  // 프로젝트 멤버 상태
-  const [leader, setLeader] = useState<ProjectMember | null>(null);
-  const [members, setMembers] = useState<Participant[]>([]);
-  const [isMembersLoading, setIsMembersLoading] = useState(false);
+    // 프로젝트 멤버 상태
+    // const [leader, setLeader] = useState<ProjectMember | null>(null);
+    const [members, setMembers] = useState<Participant[]>([]);
+    const [isMembersLoading, setIsMembersLoading] = useState(false);
+    const { data: me } = useMe();
 
-  // 수정 모드일 때 초기 데이터 설정
-  useEffect(() => {
-    if (isOpen && isEditMode && initialData) {
-      setTitle(initialData.title);
-      setStatus(initialData.status);
-      setPriority(initialData.priority);
-      setParticipantIds(initialData.participants.map((p) => p.userId));
-      setStartDate(initialData.startDate ?? "");
-      setDueDate(initialData.dueDate ?? "");
-      setDescription(initialData.description ?? "");
-    }
-  }, [isOpen, isEditMode, initialData]);
+    // 수정 모드일 때 초기 데이터 설정
+    useEffect(() => {
+        if (isOpen && isEditMode && initialData) {
+            setTitle(initialData.title);
+            setStatus(initialData.status);
+            setPriority(initialData.priority);
+            setParticipantIds(initialData.participants.map((p) => p.userId));
+            setStartDate(initialData.startDate ?? "");
+            setDueDate(initialData.dueDate ?? "");
+            setDescription(initialData.description ?? "");
+        }
+    }, [isOpen, isEditMode, initialData]);
 
-  // 프로젝트 멤버 조회
-  useEffect(() => {
-    if (!isOpen || !projectId) return;
+    // 프로젝트 멤버 조회
+    useEffect(() => {
+        if (!isOpen || !projectId) return;
 
-    const fetchMembers = async () => {
-      setIsMembersLoading(true);
-      try {
-        const response = await getProjectMembersRequest(projectId);
-        const projectMembers = response.data;
+        const fetchMembers = async () => {
+            setIsMembersLoading(true);
+            try {
+                const response = await getProjectMembersRequest(projectId);
+                const projectMembers = response.data;
 
-        // LEADER 찾기
-        const leaderMember = projectMembers.find(
-          (member) => member.role === "LEADER"
-        );
-        setLeader(leaderMember || null);
+                // LEADER 찾기
+                // const leaderMember = projectMembers.find(
+                //     (member) => member.role === "LEADER"
+                // );
+                // setLeader(leaderMember || null);
 
-        // MEMBER 역할만 필터링하여 참여자 목록으로 설정
-        const memberParticipants: Participant[] = projectMembers
-          .filter((member) => member.role === "MEMBER")
-          .map((member) => ({
-            userId: member.userId,
-            name: member.name,
-            email: member.email,
-            profileImageUrl: member.profileImageUrl,
-            role: member.role,
-          }));
-        setMembers(memberParticipants);
-      } catch (error) {
-        console.error("멤버 조회 실패:", error);
-        toast.error("프로젝트 멤버를 불러오는데 실패했습니다.");
-      } finally {
-        setIsMembersLoading(false);
-      }
+                // 나를 제외하고 참여자 목록으로 설정
+                const memberParticipants: Participant[] = projectMembers
+                    .filter((member) => member.userId !== me?.userId)
+                    .map((member) => ({
+                        userId: member.userId,
+                        name: member.name,
+                        email: member.email,
+                        profileImageUrl: member.profileImageUrl,
+                        role: member.role,
+                    }));
+                setMembers(memberParticipants);
+            } catch (error) {
+                console.error("멤버 조회 실패:", error);
+                toast.error("프로젝트 멤버를 불러오는데 실패했습니다.");
+            } finally {
+                setIsMembersLoading(false);
+            }
+        };
+
+        fetchMembers();
+    }, [isOpen, projectId, me?.userId]);
+
+    const isFormValid =
+        title.trim() !== "" && status && priority && startDate && dueDate;
+
+    // defaultStatus가 변경되거나 모달이 열릴 때 상태 초기화
+    useEffect(() => {
+        if (isOpen && defaultStatus) {
+            setStatus(defaultStatus);
+        }
+    }, [isOpen, defaultStatus]);
+
+    const resetForm = () => {
+        setTitle("");
+        setStatus(defaultStatus);
+        setPriority(undefined);
+        setParticipantIds([]);
+        setStartDate("");
+        setDueDate("");
+        setDescription("");
     };
 
-    fetchMembers();
-  }, [isOpen, projectId]);
+    const submitHandler = async () => {
+        if (!isFormValid) {
+            toast.error("제목, 상태, 중요도, 시작일, 마감일을 입력해주세요.");
+            return;
+        }
 
-  const isFormValid =
-    title.trim() !== "" && status && priority && startDate && dueDate;
+        setIsLoading(true);
+        try {
+            if (isEditMode && taskId) {
+                // 수정 모드
+                await updateTaskRequest(projectId, taskId, {
+                    title: title.trim(),
+                    status: status!,
+                    priority: priority!,
+                    participantIds,
+                    startDate,
+                    dueDate,
+                    description: description.trim() || undefined,
+                });
+                toast.success("Task가 수정되었습니다.");
+            } else {
+                // 생성 모드
+                await createTaskRequest(projectId, {
+                    title: title.trim(),
+                    status: status!,
+                    priority: priority!,
+                    participantIds,
+                    startDate,
+                    dueDate,
+                    description: description.trim() || undefined,
+                });
+                toast.success("Task가 생성되었습니다.");
+            }
 
-  // defaultStatus가 변경되거나 모달이 열릴 때 상태 초기화
-  useEffect(() => {
-    if (isOpen && defaultStatus) {
-      setStatus(defaultStatus);
-    }
-  }, [isOpen, defaultStatus]);
+            resetForm();
+            onSuccess?.();
+            onClose();
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : isEditMode
+                    ? "Task 수정에 실패했습니다."
+                    : "Task 생성에 실패했습니다.";
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const resetForm = () => {
-    setTitle("");
-    setStatus(defaultStatus);
-    setPriority(undefined);
-    setParticipantIds([]);
-    setStartDate("");
-    setDueDate("");
-    setDescription("");
-  };
-
-  const submitHandler = async () => {
-    if (!isFormValid) {
-      toast.error("제목, 상태, 중요도, 시작일, 마감일을 입력해주세요.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      if (isEditMode && taskId) {
-        // 수정 모드
-        await updateTaskRequest(projectId, taskId, {
-          title: title.trim(),
-          status: status!,
-          priority: priority!,
-          participantIds,
-          startDate,
-          dueDate,
-          description: description.trim() || undefined,
-        });
-        toast.success("Task가 수정되었습니다.");
-      } else {
-        // 생성 모드
-        await createTaskRequest(projectId, {
-          title: title.trim(),
-          status: status!,
-          priority: priority!,
-          participantIds,
-          startDate,
-          dueDate,
-          description: description.trim() || undefined,
-        });
-        toast.success("Task가 생성되었습니다.");
-      }
-
-      resetForm();
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : isEditMode
-          ? "Task 수정에 실패했습니다."
-          : "Task 생성에 실패했습니다.";
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <UserInfoModal
-      isOpen={isOpen}
-      onClose={onClose}
-      className="max-w-2xl max-h-[800px] overflow-y-auto"
-      titleNode={
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="업무 제목을 입력하세요"
-          className="w-full text-lg font-bold outline-none"
-        />
-      }
-    >
-      <div>
-        <div className="grid grid-cols-[80px_1fr] gap-x-10 gap-y-4 pb-6 border-b">
-          <span className="inline-flex items-center text-gray4">
-            <Settings2 size={18} className="mr-2" /> 상태
-          </span>
-          <div>
-            <TaskPopoverSelect
-              value={status}
-              onChange={setStatus}
-              placeholder="+ 상태 선택"
-              variant="white"
-              options={[
-                { value: "TODO", label: "To do" },
-                { value: "IN_PROGRESS", label: "In Progress" },
-                { value: "COMPLETED", label: "Completed" },
-              ]}
-            />
-          </div>
-          <span className="inline-flex items-center text-gray4">
-            <Tag size={18} className="mr-2" /> 중요도
-          </span>
-          <div>
-            <TaskPopoverSelect
-              value={priority}
-              onChange={setPriority}
-              placeholder="+ 중요도 선택"
-              options={LABEL_OPTIONS}
-            />
-          </div>
-          <span className="inline-flex items-center text-gray4">
-            <UserStar size={18} className="mr-2" /> 담당자
-          </span>
-          <div>
-            {isMembersLoading ? (
-              <span className="text-sm text-gray4">불러오는 중...</span>
-            ) : leader ? (
-              <Label
-                text={leader.name}
-                leftIcon={
-                  <Profile
-                    imageUrl={leader.profileImageUrl}
-                    userName={leader.name}
-                    className="size-4"
-                  />
-                }
-                variant="white"
-                size="sm"
-                className="py-1"
-              />
-            ) : (
-              <span className="text-sm text-gray4">담당자 없음</span>
-            )}
-          </div>
-          <span className="inline-flex items-center text-gray4">
-            <UserRound size={18} className="mr-2" /> 참여자
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {isMembersLoading ? (
-              <span className="text-sm text-gray4">불러오는 중...</span>
-            ) : members.length > 0 ? (
-              <TaskParticipantSelect
-                participants={members}
-                selectedUserIds={participantIds}
-                onChange={setParticipantIds}
-                placeholder="+ 참여자 선택"
-              />
-            ) : (
-              <span className="text-sm text-gray4">
-                참여 가능한 멤버가 없습니다
-              </span>
-            )}
-          </div>
-          <span className="inline-flex items-center text-gray4">
-            <CalendarDays size={18} className="mr-2" /> 시작일
-          </span>
-          <div>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
-            />
-          </div>
-          <span className="inline-flex items-center text-gray4">
-            <CalendarDays size={18} className="mr-2" /> 마감일
-          </span>
-          <div>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              min={startDate}
-              className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
-            />
-          </div>
-        </div>
-        <div className="min-h-[200px] pt-4 border-b">
-          <span className="block text-gray4 pb-2">설명</span>
-          <textarea
-            placeholder="여기에 설명을 적어주세요"
-            className="inline-flex text-sm text-gray5 w-full min-h-[140px]"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
-        </div>
-        <div className="flex justify-end gap-2 pt-5">
-          <Button
-            type="submit"
-            icon={<PenLine size={14} />}
-            variant={isFormValid && !isLoading ? "primary" : "disable"}
-            label={isLoading ? "저장 중..." : isEditMode ? "수정" : "저장"}
-            onClick={submitHandler}
-            disabled={!isFormValid || isLoading}
-          />
-        </div>
-      </div>
-    </UserInfoModal>
-  );
+    return (
+        <UserInfoModal
+            isOpen={isOpen}
+            onClose={onClose}
+            className="max-w-2xl max-h-[800px] overflow-y-auto"
+            titleNode={
+                <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="업무 제목을 입력하세요"
+                    className="w-full text-lg font-bold outline-none"
+                />
+            }
+        >
+            <div>
+                <div className="grid grid-cols-[80px_1fr] gap-x-10 gap-y-4 pb-6 border-b">
+                    <span className="inline-flex items-center text-gray4">
+                        <Settings2 size={18} className="mr-2" /> 상태
+                    </span>
+                    <div>
+                        <TaskPopoverSelect
+                            value={status}
+                            onChange={setStatus}
+                            placeholder="+ 상태 선택"
+                            variant="white"
+                            options={[
+                                { value: "TODO", label: "To do" },
+                                { value: "IN_PROGRESS", label: "In Progress" },
+                                { value: "COMPLETED", label: "Completed" },
+                            ]}
+                        />
+                    </div>
+                    <span className="inline-flex items-center text-gray4">
+                        <Tag size={18} className="mr-2" /> 중요도
+                    </span>
+                    <div>
+                        <TaskPopoverSelect
+                            value={priority}
+                            onChange={setPriority}
+                            placeholder="+ 중요도 선택"
+                            options={LABEL_OPTIONS}
+                        />
+                    </div>
+                    <span className="inline-flex items-center text-gray4">
+                        <UserStar size={18} className="mr-2" /> 담당자
+                    </span>
+                    <div>
+                        {isMembersLoading ? (
+                            <span className="text-sm text-gray4">
+                                불러오는 중...
+                            </span>
+                        ) : me ? (
+                            <Label
+                                text={me.name}
+                                leftIcon={
+                                    <Profile
+                                        imageUrl={me.profileImageUrl}
+                                        userName={me.name.charAt(0)}
+                                        className="size-4"
+                                    />
+                                }
+                                variant="white"
+                                size="sm"
+                                className="py-1"
+                            />
+                        ) : (
+                            <span className="text-sm text-gray4">
+                                담당자 없음
+                            </span>
+                        )}
+                    </div>
+                    <span className="inline-flex items-center text-gray4">
+                        <UserRound size={18} className="mr-2" /> 참여자
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                        {isMembersLoading ? (
+                            <span className="text-sm text-gray4">
+                                불러오는 중...
+                            </span>
+                        ) : members.length > 0 ? (
+                            <TaskParticipantSelect
+                                participants={members}
+                                selectedUserIds={participantIds}
+                                onChange={setParticipantIds}
+                                placeholder="+ 참여자 선택"
+                            />
+                        ) : (
+                            <span className="text-sm text-gray4">
+                                참여 가능한 멤버가 없습니다
+                            </span>
+                        )}
+                    </div>
+                    <span className="inline-flex items-center text-gray4">
+                        <CalendarDays size={18} className="mr-2" /> 시작일
+                    </span>
+                    <div>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
+                        />
+                    </div>
+                    <span className="inline-flex items-center text-gray4">
+                        <CalendarDays size={18} className="mr-2" /> 마감일
+                    </span>
+                    <div>
+                        <input
+                            type="date"
+                            value={dueDate}
+                            onChange={(e) => setDueDate(e.target.value)}
+                            min={startDate}
+                            className="px-3 py-1.5 text-sm border border-gray2 rounded-md outline-none focus:border-primary"
+                        />
+                    </div>
+                </div>
+                <div className="min-h-[200px] pt-4 border-b">
+                    <span className="block text-gray4 pb-2">설명</span>
+                    <textarea
+                        placeholder="여기에 설명을 적어주세요"
+                        className="inline-flex text-sm text-gray5 w-full min-h-[140px]"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    ></textarea>
+                </div>
+                <div className="flex justify-end gap-2 pt-5">
+                    <Button
+                        type="submit"
+                        icon={<PenLine size={14} />}
+                        variant={
+                            isFormValid && !isLoading ? "primary" : "disable"
+                        }
+                        label={
+                            isLoading
+                                ? "저장 중..."
+                                : isEditMode
+                                ? "수정"
+                                : "저장"
+                        }
+                        onClick={submitHandler}
+                        disabled={!isFormValid || isLoading}
+                    />
+                </div>
+            </div>
+        </UserInfoModal>
+    );
 };
 
 export default TaskEditorModal;

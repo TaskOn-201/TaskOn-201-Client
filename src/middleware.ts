@@ -6,6 +6,11 @@ const PUBLIC_PATHS = ["/", "/login", "/signup","/oauth2/success"];
 
 export function middleware(request: NextRequest) {
 
+  // 임시 인증 막기
+   if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
   const refreshToken = request.cookies.get("refreshToken");
   const { pathname } = request.nextUrl;
 

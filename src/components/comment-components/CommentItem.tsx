@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { MeUser } from "@/lib/auth/authStorage";
 import { CommentData } from "@/lib/comment/commentApi";
@@ -45,17 +45,22 @@ const CommentItem = ({
     onDelete,
 }: CommentItemProps) => {
     const isMe = comment.author.userId === me.userId;
+    const displayName = comment.author?.name ?? "탈퇴한 사용자";
+    const initial = displayName.charAt(0);
 
     return (
-        <li key={comment.commentId} className="flex gap-4 pt-2 pb-4 border-b border-b-gray1/40 last:border-0">
+        <li
+            key={comment.commentId}
+            className="flex gap-4 pt-2 pb-4 border-b border-b-gray1/40 last:border-0"
+        >
             <div className="mt-3">
-                <Profile size="sm" imageUrl={comment.author.profileImageUrl} />
+                <Profile size="sm" userName={initial} imageUrl={comment.author.profileImageUrl} />
             </div>
             <div className="w-full flex">
                 <div className="flex-1">
                     <div className="flex text-xs text-gray4 justify-between items-center gap-2 pb-1">
                         <div className="flex gap-1">
-                            <p className="text-center">{comment.author.name}</p>
+                            <p className="text-center">{displayName}</p>
                             {"·"}
                             <span className="">
                                 {dateFormatted(comment.createdAt)}
@@ -137,9 +142,7 @@ const CommentItem = ({
                             <div className="absolute inset-0 bg-white">
                                 <textarea
                                     value={editingContent}
-                                    onChange={(e) =>
-                                        onChange(e.target.value)
-                                    }
+                                    onChange={(e) => onChange(e.target.value)}
                                     className="w-full h-full border rounded-md px-3 py-3 text-sm resize-none"
                                     disabled={isSaving}
                                     autoFocus
