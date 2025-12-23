@@ -198,18 +198,18 @@ const Board = () => {
                 // 기존 상태에서 제거
                 const sourceKey =
                     statusKeys[currentStatus as MovableTaskStatus];
-                newData.data[sourceKey] = newData.data[sourceKey].filter(
+                newData.data[sourceKey] = (newData.data[sourceKey] ?? []).filter(
                     (t: BoardTaskItem) => t.taskId !== taskId
                 );
 
                 // 새 상태에 추가
                 const destKey = statusKeys[newStatus as MovableTaskStatus];
-                const taskToMove = oldData.data[sourceKey]?.find(
+                const taskToMove = (oldData.data[sourceKey] ?? []).find(
                     (t: BoardTaskItem) => t.taskId === taskId
                 );
                 if (taskToMove) {
                     newData.data[destKey] = [
-                        ...newData.data[destKey],
+                        ...(newData.data[destKey] ?? []),
                         { ...taskToMove, status: newStatus },
                     ];
                 }
