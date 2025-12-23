@@ -14,6 +14,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 interface StateTaskCardProps extends StateDataProps {
     isDragging?: boolean;
+    dndDisabled?: boolean;
 }
 
 const StateTaskCard = (task: StateTaskCardProps) => {
@@ -32,6 +33,7 @@ const StateTaskCard = (task: StateTaskCardProps) => {
         useDraggable({
             id: `task-${taskId}`,
             data: { taskId, task },
+            disabled: task.dndDisabled,
         });
 
     const style = {

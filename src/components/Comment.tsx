@@ -59,7 +59,7 @@ const Comment = ({ projectId, taskId, task }: CommentProps) => {
 
     return (
         <div>
-            <CommentInput
+            {isTaskMemberCheck && <CommentInput
                 me={me}
                 value={commentContent}
                 onChange={setCommentContent}
@@ -69,7 +69,7 @@ const Comment = ({ projectId, taskId, task }: CommentProps) => {
                     createComment.isPending ||
                     !commentContent.trim()
                 }
-            />
+            />}
             {!isLoading && (
                 <CommentList
                     me={me}

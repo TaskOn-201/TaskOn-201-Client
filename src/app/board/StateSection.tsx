@@ -10,6 +10,7 @@ interface StateSectionProps {
   statusKey: TaskStatus;
   tasks: StateDataProps[];
   onTaskCreate?: () => void;
+  dndDisabled?: boolean;
 }
 
 const StateSection = ({
@@ -17,10 +18,12 @@ const StateSection = ({
   statusKey,
   tasks,
   onTaskCreate,
+  dndDisabled
 }: StateSectionProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: statusKey,
     data: { status: statusKey },
+    disabled: statusKey === "ARCHIVED",
   });
 
   return (
@@ -33,7 +36,7 @@ const StateSection = ({
         } ${isOver ? "ring-2 ring-blue-400 bg-blue-50/50" : ""}`}
       >
         {tasks.map((item) => (
-          <StateTaskCard key={item.taskId} {...item} />
+          <StateTaskCard key={item.taskId} {...item} dndDisabled={dndDisabled} />
         ))}
         {tasks.length === 0 && !isOver && (
           <li className="text-center text-gray3 py-8">
