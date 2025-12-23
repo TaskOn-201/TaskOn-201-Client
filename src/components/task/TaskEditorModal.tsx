@@ -74,11 +74,18 @@ const TaskEditorModal = ({
 
     // 수정 모드일 때 초기 데이터 설정
     useEffect(() => {
-        if (isOpen && isEditMode && initialData) {
+        if (
+            isOpen &&
+            isEditMode &&
+            initialData &&
+            initialData.status !== "ARCHIVED"
+        ) {
             setTitle(initialData.title);
             setStatus(initialData.status);
             setPriority(initialData.priority);
-            setParticipantIds(initialData.participants.map((p) => p.userId));
+            setParticipantIds(
+                (initialData.participants ?? []).map((p) => p.userId)
+            );
             setStartDate(initialData.startDate ?? "");
             setDueDate(initialData.dueDate ?? "");
             setDescription(initialData.description ?? "");

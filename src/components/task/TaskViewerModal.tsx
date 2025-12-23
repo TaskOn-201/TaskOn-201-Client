@@ -53,8 +53,16 @@ const getStatusLabel = (status: string) => {
         TODO: "To do",
         IN_PROGRESS: "In Progress",
         COMPLETED: "Completed",
+        ARCHIVED: "Archived",
     };
     return statusMap[status] ?? status;
+};
+
+const getArchivedReasonLabel = (reason?: string) => {
+    const map: Record<string, string> = {
+        ASSIGNEE_WITHDRAWN: "담당자 탈퇴로 보관됨",
+    };
+    return reason ? map[reason] ?? reason : "보관됨";
 };
 
 const TaskViewerModal = ({
@@ -70,7 +78,8 @@ const TaskViewerModal = ({
         enabled: isOpen,
     });
 
-    console.log(taskId, projectId);
+    // 아카이브상태이면 편집/수정 막기
+    const isArchived = task?.status === "ARCHIVED";
 
     // 편집 모드 상태
     const [isEditing, setIsEditing] = useState(false);
@@ -99,7 +108,9 @@ const TaskViewerModal = ({
             setEditTitle(task.title);
             setEditStatus(task.status);
             setEditPriority(task.priority);
-            setEditParticipantIds(task.participants.map((p) => p.userId));
+            setEditParticipantIds(
+                (task.participants ?? []).map((p) => p.userId)
+            );
             setEditStartDate(task.startDate ?? "");
             setEditDueDate(task.dueDate ?? "");
             setEditDescription(task.description ?? "");
@@ -154,6 +165,10 @@ const TaskViewerModal = ({
     };
 
     const handleEditClick = () => {
+        if (isArchived) {
+            toast.warning("보관된 Task는 수정할 수 없습니다.");
+            return;
+        }
         setIsEditing(true);
     };
 
@@ -204,9 +219,12 @@ const TaskViewerModal = ({
     };
 
     const canAssigneeEdit =
+        !isArchived &&
         !!me?.userId &&
         !!task?.assignee?.userId &&
         task.assignee.userId === me.userId;
+
+    const displayName = task?.assignee?.name ?? "탈퇴한 사용자";
 
     return (
         <UserInfoModal
@@ -372,6 +390,25 @@ const TaskViewerModal = ({
             ) : (
                 /* 보기 모드 UI */
                 <div>
+                    {task.status === "ARCHIVED" && (
+                        <div className="mb-4 rounded-lg border border-gray2 bg-gray1/60 px-4 py-3 text-sm text-gray5">
+                            <div className="font-semibold">
+                                이 Task는 보관(Archived) 상태입니다.
+                            </div>
+                            <div className="mt-1 text-gray4">
+                                {getArchivedReasonLabel(task.archivedReason)}
+                                {task.archivedAt
+                                    ? ` · ${new Date(
+                                          task.archivedAt
+                                      ).toLocaleString("ko-KR")}`
+                                    : ""}
+                            </div>
+                            <div className="mt-1 text-gray4">
+                                아카이브 보기 상태에서는 수정 및 상태 변경이
+                                불가능합니다.
+                            </div>
+                        </div>
+                    )}
                     <div className="grid grid-cols-[80px_1fr] gap-x-10 gap-y-4 pb-6 border-b">
                         <span className="inline-flex items-center text-gray4">
                             <Settings2 size={18} className="mr-2" /> 상태
@@ -408,10 +445,7 @@ const TaskViewerModal = ({
                                                 task.assignee.profileImageUrl ??
                                                 undefined
                                             }
-                                            userName={
-                                                task.assignee.name.charAt(0) ??
-                                                "탈퇴한 사용자"
-                                            }
+                                            userName={displayName.charAt(0)}
                                             className="size-4"
                                         />
                                     }
@@ -429,30 +463,32 @@ const TaskViewerModal = ({
                             <UserRound size={18} className="mr-2" /> 참여자
                         </span>
                         <div className="flex flex-wrap gap-2">
-                            {task.participants.length > 0 ? (
-                                task.participants.map((participant) => (
-                                    <Label
-                                        key={participant.userId}
-                                        text={participant.name}
-                                        leftIcon={
-                                            <Profile
-                                                imageUrl={
-                                                    participant.profileImageUrl ??
-                                                    undefined
-                                                }
-                                                userName={
-                                                    participant.name.charAt(
+                            {(task.participants ?? []).length > 0 ? (
+                                (task.participants ?? []).map((participant) => {
+                                    const displayName =
+                                        participant.name ?? "탈퇴한 사용자";
+                                    return (
+                                        <Label
+                                            key={participant.userId}
+                                            text={displayName}
+                                            leftIcon={
+                                                <Profile
+                                                    imageUrl={
+                                                        participant.profileImageUrl ??
+                                                        undefined
+                                                    }
+                                                    userName={displayName.charAt(
                                                         0
-                                                    ) ?? "탈퇴한 사용자"
-                                                }
-                                                className="size-4"
-                                            />
-                                        }
-                                        variant="white"
-                                        size="sm"
-                                        className="py-1"
-                                    />
-                                ))
+                                                    )}
+                                                    className="size-4"
+                                                />
+                                            }
+                                            variant="white"
+                                            size="sm"
+                                            className="py-1"
+                                        />
+                                    );
+                                })
                             ) : (
                                 <span className="text-sm text-gray4">
                                     참여자 없음
@@ -477,7 +513,7 @@ const TaskViewerModal = ({
                             설명
                         </span>
                         <p className="text-sm text-gray5">
-                            {task.description || "설명이 없습니다."}
+                            {task.description ?? "설명이 없습니다."}
                         </p>
                     </div>
                     {canAssigneeEdit && (
@@ -499,7 +535,7 @@ const TaskViewerModal = ({
                 </div>
             )}
             {/* 댓글 - 편집 모드가 아닐 때만 표시 */}
-            {!isEditing && (
+            {!isEditing && !isArchived && (
                 <Comment projectId={projectId} taskId={taskId} task={task} />
             )}
         </UserInfoModal>
