@@ -1,3 +1,5 @@
+"use client"
+
 import { Client } from "@stomp/stompjs";
 import { RefObject } from "react";
 

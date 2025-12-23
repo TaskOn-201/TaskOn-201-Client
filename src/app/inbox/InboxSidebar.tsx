@@ -1,3 +1,5 @@
+"use client"
+
 import { Search, Pencil } from "lucide-react";
 import Button from "@/components/Button";
 import { ChatRoomData } from "./type";

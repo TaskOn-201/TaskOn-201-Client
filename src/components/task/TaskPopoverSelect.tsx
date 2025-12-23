@@ -1,3 +1,5 @@
+"use client"
+
 import Button from "../Button";
 import Label, { LabelVariant } from "../Label";
 import PopoverActionItem from "../popover/PopoverActionItem";

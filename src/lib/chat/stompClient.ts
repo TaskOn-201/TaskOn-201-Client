@@ -1,3 +1,5 @@
+"use client"
+
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { API_BASE_URL } from "../auth/authApi";

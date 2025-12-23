@@ -1,3 +1,5 @@
+"use client"
+
 import { TaskDetailData } from "@/lib/task/taskApi";
 import CommentInput from "./comment-components/CommentInput";
 import useMe from "@/lib/user/useMe";

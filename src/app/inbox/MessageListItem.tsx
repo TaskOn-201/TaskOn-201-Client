@@ -1,3 +1,5 @@
+"use client"
+
 import { formatChatRoomTime } from "@/lib/chat/chatUtils";
 import { ChatRoomData } from "./type";
 import ChatRoomIcon from "./ChatRoomIcon";

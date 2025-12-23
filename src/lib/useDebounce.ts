@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react";
 
 // T 어떤 타입이든

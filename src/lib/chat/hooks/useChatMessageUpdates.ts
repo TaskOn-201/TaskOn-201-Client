@@ -1,3 +1,5 @@
+"use client"
+
 import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
 import { RefObject, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";

@@ -1,3 +1,5 @@
+"use client"
+
 import { Project } from "@/lib/project/projectApi";
 import { create } from "zustand";
 

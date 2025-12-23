@@ -1,3 +1,5 @@
+"use client"
+
 import { MeUser } from "@/lib/auth/authStorage";
 import { CommentData } from "@/lib/comment/commentApi";
 import Profile from "../Profile";

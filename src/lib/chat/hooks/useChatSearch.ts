@@ -1,3 +1,5 @@
+"use client"
+
 import { searchChat } from './../chatApi';
 import { useQuery } from "@tanstack/react-query";
 import type { ApiError } from "@/lib/auth/authApi";

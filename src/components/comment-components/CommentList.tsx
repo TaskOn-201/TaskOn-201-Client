@@ -1,3 +1,5 @@
+"use client"
+
 import { CommentData } from "@/lib/comment/commentApi";
 import { useState } from "react";
 import { MeUser } from "@/lib/auth/authStorage";

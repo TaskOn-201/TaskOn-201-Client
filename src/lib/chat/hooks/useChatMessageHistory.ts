@@ -1,3 +1,5 @@
+"use client";
+
 import { ChatMessage } from "@/app/inbox/type";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getChatMessageHistory } from "../chatApi";

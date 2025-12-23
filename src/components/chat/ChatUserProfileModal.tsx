@@ -1,3 +1,5 @@
+"use client"
+
 import { useUserProfile } from "@/lib/chat/hooks/useChatUserProfile";
 import { toast } from "sonner";
 import UserInfoModal from "../modal/UserInfoModal";

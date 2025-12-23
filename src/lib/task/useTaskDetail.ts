@@ -1,3 +1,5 @@
+"use client"
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteTaskRequest, getTaskDetail } from "./taskApi";
 import { toast } from "sonner";

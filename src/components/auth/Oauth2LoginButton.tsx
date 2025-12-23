@@ -1,3 +1,4 @@
+"use client"
 
 import { redirectOAuth } from "@/lib/auth/oauth";
 import Image from "next/image";
