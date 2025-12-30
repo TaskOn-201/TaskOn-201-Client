@@ -1,17 +1,27 @@
-"use client"
+"use client";
 
 import { Client, IFrame } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 import { API_BASE_URL } from "../auth/authApi";
 
-interface CreateClientOptions {
+function getApiBaseUrl() {
+    const url = API_BASE_URL;
+    if (!url)
+        throw new Error("API_BASE_URL is undefined, env 설정을 확인하세요");
+    return url;
+}
+
+function toWsBaseUrl(httpBaseUrl: string) {
+    return httpBaseUrl.replace(/^http/, "ws");
+}
+export function createStompClient(options: {
     accessToken: string | null;
     onConnect?: () => void;
     onDisconnect?: () => void;
     onStompError?: (frame: IFrame) => void;
-}
+}) {
+    const WS_BASE_URL = toWsBaseUrl(getApiBaseUrl());
+    const WS_ENDPOINT = `${WS_BASE_URL}/ws/chat`;
 
-export function createStompClient(options: CreateClientOptions) {
     let disconnectNotified = false;
     const notifyDisconnectOnce = () => {
         if (disconnectNotified) return;
@@ -20,7 +30,7 @@ export function createStompClient(options: CreateClientOptions) {
     };
 
     const client = new Client({
-        webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws/chat`),
+        webSocketFactory: () => new WebSocket(WS_ENDPOINT),
         connectHeaders: options.accessToken
             ? { Authorization: `Bearer ${options.accessToken}` }
             : {},
@@ -34,37 +44,11 @@ export function createStompClient(options: CreateClientOptions) {
             options.onConnect?.();
         },
 
-        onDisconnect: () => {
-            notifyDisconnectOnce();
-        },
+        onDisconnect: () => notifyDisconnectOnce(),
 
-        onStompError: (frame) => {
-            console.log("STOMP ERROR", {
-                command: frame.command,
-                headers: frame.headers,
-                body: frame.body,
-            });
+        onStompError: (frame) => options.onStompError?.(frame),
 
-            // 외부 핸들러 호출되게
-            options.onStompError?.(frame);
-        },
-
-        onWebSocketClose: (evt) => {
-            console.error("WS CLOSE", {
-                code: evt.code,
-                reason: evt.reason,
-                wasClean: evt.wasClean,
-            });
-
-            // STOMP disconnect 없이 닫히는 경우에도 state 정리
-            notifyDisconnectOnce();
-        },
-
-        onWebSocketError: (evt) => {
-            console.error("WS ERROR", evt);
-        },
-
-        debug: (debug) => console.log(debug),
+        onWebSocketClose: () => notifyDisconnectOnce(),
     });
 
     return client;
