@@ -83,8 +83,7 @@ export async function profileUpdateRequest({
     return (await res.json()).data;
 }
 
-export async function fetchMe(): Promise<UserInfoResponse["data"] | null> {
-    const token = getAccessToken();
+export async function fetchMe(token: string): Promise<UserInfoResponse["data"] | null> {
 
     if (!token) {
         return null;
