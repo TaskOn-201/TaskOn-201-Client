@@ -4,6 +4,7 @@ import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import ReactQueryProvider from "./ReactQueryProvider";
 import { AuthInitializer } from "./AuthInitializer";
+import { getUserByToken, reissueServerToken } from "@/lib/auth/authFetchServer";
 
 const openSans = Open_Sans({
     variable: "--font-open-sans",
@@ -16,11 +17,17 @@ export const metadata: Metadata = {
     description: "TaskOn 협업 프로젝트",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const newAccessToken = await reissueServerToken();
+
+    let user = null;
+    if (newAccessToken) {
+        user = await getUserByToken(newAccessToken);
+    }
     return (
         <html lang="ko">
             <head>
@@ -32,6 +39,18 @@ export default function RootLayout({
                 />
             </head>
             <body className={`${openSans.variable} antialiased `}>
+                {newAccessToken && (
+                    <script
+                        dangerouslySetInnerHTML={{
+                            __html: `
+                            window.localStorage.setItem("accessToken", "${newAccessToken}");
+                            window.localStorage.setItem("user", ${JSON.stringify(
+                                JSON.stringify(user)
+                            )});
+                        `,
+                        }}
+                    />
+                )}
                 <ReactQueryProvider>
                     <AuthInitializer>
                         <LayoutWrapper>{children}</LayoutWrapper>
