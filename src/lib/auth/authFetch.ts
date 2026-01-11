@@ -27,7 +27,7 @@ async function fetchToken(
         headers.set("Content-Type", "application/json");
     }
 
-    return await fetch(`${API_BASE_URL}${url}`, { 
+    return await fetch(`${API_BASE_URL}${url}`, {
         ...options,
         headers,
         credentials: "include",
@@ -39,23 +39,24 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     const token = getAccessToken();
     let res = await fetchToken(url, options, token);
 
-    if (res.status !== 401) {
-        return res;
-    }
-
-    // 401 이면 재발급
-    try {
+    if (res.status === 401) {
         const newToken = await reissueAccessToken();
 
-        res = await fetchToken(url, options, newToken);
-        return res;
-    } catch (err) {
-        clearAuth();
-        if (typeof window !== "undefined") {
-            window.location.href = "/login";
+        // newToken null 이면 만료로 판단하여 accessToken, user 삭제
+        if (!newToken) {
+            console.warn("refreshToken 만료, 로그인 페이지로 이동");
+            clearAuth();
+            if (typeof window !== "undefined") {
+                window.location.href = "/login";
+            }
+            return res;
         }
-        throw err;
+
+        // 재발급 성공 시 새 토큰으로 다시 요청
+        res = await fetchToken(url, options, newToken);
     }
+
+    return res;
 }
 
 interface ReissueResponse {
@@ -67,38 +68,40 @@ interface ReissueResponse {
 }
 
 // 토큰 재발급 API
-export async function reissueAccessToken(): Promise<string> {
+export async function reissueAccessToken(): Promise<string | null> {
     const res = await fetch(`${API_BASE_URL}/api/auth/reissue`, {
         method: "POST",
         credentials: "include",
     });
 
-    if (res.status === 401) {
+    // refreshToken 만료
+    if (res.status === 403 || res.status === 440) {
+        console.warn("refreshToken 만료");
         clearAuth();
         if (typeof window !== "undefined") {
             window.location.href = "/login";
         }
-        throw new Error("리프레시 토큰 만료");
+        return null;
     }
 
-    const body: ReissueResponse = await res.json();
-
-    if (!res.ok) {
-        throw new Error("토큰 재발급 실패");
+    // 성공 시
+    if (res.ok) {
+        const body: ReissueResponse = await res.json();
+        const newAccessToken = body.data.accessToken;
+        const user = getAuthUser();
+        if (user) {
+            saveAuth(newAccessToken, user);
+        } else {
+            saveAuth(newAccessToken, {
+                userId: 0,
+                email: "",
+                name: "",
+                profileImageUrl: null,
+            });
+        }
+        return newAccessToken;
     }
 
-    const newAccessToken = body.data.accessToken;
-
-    const user = getAuthUser();
-    if (user) {
-        saveAuth(newAccessToken, user);
-    } else {
-        saveAuth(newAccessToken, {
-            userId: 0,
-            email: "",
-            name: "",
-            profileImageUrl: null,
-        });
-    }
-    return newAccessToken;
+    console.warn("reissueAccessToken 실패:", res.status);
+    return null;
 }
