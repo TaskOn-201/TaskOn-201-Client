@@ -54,7 +54,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
         }
         if (!isValidPassword(password)) {
             toast.error(
-                "비밀번호는 14자 이상이며, 대문자/특수문자를 각각 필수로 1개 이상 포함해야 합니다"
+                "비밀번호는 영문 대문자, 소문자, 숫자, 특수기호가 각 1개 이상 포함된 8~15자여야 합니다."
             );
             return;
         }
@@ -158,7 +158,7 @@ export default function SignupForm({ isVisible }: SignupFormProps) {
                         <Input
                             label="비밀번호"
                             type="password"
-                            placeholder="비밀번호를 입력하세요(14자, 대문자 1개 이상 + 특수문자 1개 이상 포함)"
+                            placeholder="비밀번호는 영문 대문자, 소문자, 숫자, 특수기호가 각 1개 이상 포함된 8~15자여야 합니다."
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             fullWidth

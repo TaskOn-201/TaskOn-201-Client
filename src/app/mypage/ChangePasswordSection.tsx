@@ -24,7 +24,6 @@ import { isValidPassword } from "@/lib/auth/validation";
 
 export default function ChangePasswordSection() {
     const router = useRouter();
-    const { clearAuth } = useAuthStore();
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -67,7 +66,7 @@ export default function ChangePasswordSection() {
             !isValidPassword(confirmPassword)
         ) {
             toast.error(
-                "비밀번호는 14자 이상이며, 대문자/특수문자를 각각 필수로 1개 이상 포함해야 합니다",
+                "비밀번호는 영문 대문자, 소문자, 숫자, 특수기호가 각 1개 이상 포함된 8~15자여야 합니다.",
                 { duration: 2000 }
             );
             return;
@@ -90,8 +89,12 @@ export default function ChangePasswordSection() {
 
     const handleSuccessConfirm = () => {
         setIsDialogOpen(false);
-        clearAuth();
-        router.replace("/login");
+
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        router.replace("/mypage");
+        router.refresh();
     };
 
     // 모든 필드가 입력되었는지 확인
@@ -126,7 +129,7 @@ export default function ChangePasswordSection() {
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="비밀번호를 입력하세요(14자, 대문자 1개 이상 + 특수문자 1개 이상 포함)"
+                        placeholder="비밀번호는 영문 대문자, 소문자, 숫자, 특수기호가 각 1개 이상 포함된 8~15자여야 합니다."
                         fullWidth
                     />
                 </div>
