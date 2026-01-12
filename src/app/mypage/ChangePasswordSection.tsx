@@ -15,15 +15,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ApiError } from "@/lib/auth/authApi";
 import { passwordChangeRequest } from "@/lib/user/userApi";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { isValidPassword } from "@/lib/auth/validation";
+import { clearAuth } from "@/lib/auth/authStorage";
+import { authCleanup } from "@/lib/auth/authCleanup";
 
 export default function ChangePasswordSection() {
-    const router = useRouter();
+    const queryClient = useQueryClient();
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -93,8 +95,13 @@ export default function ChangePasswordSection() {
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
-        router.replace("/mypage");
-        router.refresh();
+
+        authCleanup(queryClient);
+        clearAuth();
+
+        setTimeout(() => {
+            window.location.replace("/mypage");
+        }, 100);
     };
 
     // 모든 필드가 입력되었는지 확인
@@ -161,7 +168,7 @@ export default function ChangePasswordSection() {
 
             {/* 비밀번호 변경 확인 다이얼로그 */}
             <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="z-[9999]">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {dialogType === "error-current"
@@ -178,7 +185,7 @@ export default function ChangePasswordSection() {
                                 : dialogType == "error"
                                 ? "새 비밀번호와 확인 비밀번호가 일치하지 않습니다. 다시 확인해주세요."
                                 : dialogType === "success"
-                                ? "비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요."
+                                ? "비밀번호가 변경되었습니다. 보안을 위해 다음 요청부터 다시 인증됩니다."
                                 : "비밀번호를 변경하시겠습니까?"}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
