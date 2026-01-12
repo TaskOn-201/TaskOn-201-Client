@@ -6,28 +6,31 @@ import DeactivateAccountSection from "./DeactivateAccountSection";
 import ProfileSection from "./ProfileSection";
 import useMe from "@/lib/user/useMe";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function MyPage() {
-    const { data: user, isLoading } = useMe();
-    const router = useRouter();
+  const { data: user, isLoading } = useMe();
+  const router = useRouter();
 
-    if (isLoading) {
-        return <div>불러오는 중...</div>;
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
     }
-    if (!user) {
-        router.replace("/login");
-        return null;
-    }
+  }, [isLoading, user, router]);
 
-    return (
-        <div className="min-h-screen">
-            <PageHeader left="Settings" />
+  if (isLoading || !user) {
+    return <div>불러오는 중...</div>;
+  }
 
-            <div className="max-w-4xl mx-auto p-6 space-y-6">
-                <ProfileSection user={user} />
-                <ChangePasswordSection />
-                <DeactivateAccountSection />
-            </div>
-        </div>
-    );
+  return (
+    <div className="min-h-screen">
+      <PageHeader left="Settings" />
+
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <ProfileSection user={user} />
+        <ChangePasswordSection />
+        <DeactivateAccountSection />
+      </div>
+    </div>
+  );
 }
