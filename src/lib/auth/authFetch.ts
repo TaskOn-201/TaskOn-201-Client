@@ -39,13 +39,27 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     const token = getAccessToken();
     let res = await fetchToken(url, options, token);
     if (res.status === 401) {
-        const token = await reissueAccessToken();
-        if (!token) return res;
+    try {
+      const newToken = await reissueAccessToken();
+      if (!newToken) {
+        clearAuth();
+        return res;
+      }
 
-        res = await fetchToken(url, options, token);
+      // 새 토큰으로 재요청
+      res = await fetchToken(url, options, newToken);
+    } catch (err) {
+      clearAuth();
+      throw err;
     }
+  }
 
-    return res;
+  // refreshToken 도 만료된 경우
+  if (res.status === 403 || res.status === 440) {
+    clearAuth();
+  }
+
+  return res;
 }
 
 // 토큰 재발급 API

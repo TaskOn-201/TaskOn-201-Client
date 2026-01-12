@@ -38,7 +38,11 @@ const Header = ({ className }: HeaderProps) => {
         } finally {
             clearAuth();
             authCleanup(queryClient);
-            router.replace("/");
+
+            await queryClient.invalidateQueries();
+
+            router.replace("/login");
+            router.refresh();
         }
     };
 

@@ -16,7 +16,7 @@ interface ProfileSectionProps {
 }
 
 const ProfileSection = ({ user }: ProfileSectionProps) => {
-    const [name, setName] = useState(user.name);
+    const [name, setName] = useState(user.name ?? "");
     const [profileImageUrl, setProfileImageUrl] = useState<File | null>(null);
     const queryClient = useQueryClient();
     const accessToken = useAuthStore((u) => u.accessToken);
@@ -57,6 +57,8 @@ const ProfileSection = ({ user }: ProfileSectionProps) => {
             profileImageUrl: profileImageUrl,
         });
     };
+
+    if (!user) return null;
 
     return (
         <div className="bg-white rounded-lg shadow-sm p-6">
