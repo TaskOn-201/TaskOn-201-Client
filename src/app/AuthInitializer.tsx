@@ -3,16 +3,12 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { reissueAccessToken } from "@/lib/auth/authFetch";
-import { useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth/authStorage";
 import { fetchMe } from "@/lib/user/userApi";
-import { authCleanup } from "@/lib/auth/authCleanup";
-import { useQueryClient } from "@tanstack/react-query";
+
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-    const { initialize, setAuth, clearAuth } = useAuthStore();
-    const router = useRouter();
-    const queryClient = useQueryClient();
+    const { initialize, setAuth } = useAuthStore();
 
     useEffect(() => {
         const init = async () => {
@@ -23,17 +19,11 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
 
             const newToken = await reissueAccessToken();
             if (!newToken) {
-                authCleanup(queryClient);
-                clearAuth();
-                router.replace("/login");
                 return;
             }
 
             const user = await fetchMe(newToken);
             if (!user) {
-                authCleanup(queryClient);
-                clearAuth();
-                router.replace("/login");
                 return;
             }
 
@@ -41,7 +31,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         };
 
         init();
-    }, [initialize, setAuth, clearAuth, router, queryClient]);
+    }, [initialize, setAuth]);
 
     return <>{children}</>;
 }
