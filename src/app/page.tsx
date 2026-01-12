@@ -5,22 +5,9 @@ import Header from "@/components/Header";
 import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function Home() {
-  const { initialize, isAuthenticated } = useAuthStore();
-  const router = useRouter();
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.refresh();
-    }
-  }, [isAuthenticated, router]);
+  const { isAuthenticated } = useAuthStore();
 
   return (
     <div className="flex flex-col min-h-screen font-sans dark:bg-black">

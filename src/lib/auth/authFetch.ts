@@ -38,33 +38,14 @@ async function fetchToken(
 export async function authFetch(url: string, options: RequestInit = {}) {
     const token = getAccessToken();
     let res = await fetchToken(url, options, token);
-
     if (res.status === 401) {
-        const newToken = await reissueAccessToken();
+        const token = await reissueAccessToken();
+        if (!token) return res;
 
-        // newToken null 이면 만료로 판단하여 accessToken, user 삭제
-        if (!newToken) {
-            console.warn("refreshToken 만료, 로그인 페이지로 이동");
-            clearAuth();
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
-            }
-            return res;
-        }
-
-        // 재발급 성공 시 새 토큰으로 다시 요청
-        res = await fetchToken(url, options, newToken);
+        res = await fetchToken(url, options, token);
     }
 
     return res;
-}
-
-interface ReissueResponse {
-    statusCode: number;
-    message: string;
-    data: {
-        accessToken: string;
-    };
 }
 
 // 토큰 재발급 API
@@ -74,34 +55,8 @@ export async function reissueAccessToken(): Promise<string | null> {
         credentials: "include",
     });
 
-    // refreshToken 만료
-    if (res.status === 403 || res.status === 440) {
-        console.warn("refreshToken 만료");
-        clearAuth();
-        if (typeof window !== "undefined") {
-            window.location.href = "/login";
-        }
-        return null;
-    }
+    if (!res.ok) return null;
 
-    // 성공 시
-    if (res.ok) {
-        const body: ReissueResponse = await res.json();
-        const newAccessToken = body.data.accessToken;
-        const user = getAuthUser();
-        if (user) {
-            saveAuth(newAccessToken, user);
-        } else {
-            saveAuth(newAccessToken, {
-                userId: 0,
-                email: "",
-                name: "",
-                profileImageUrl: null,
-            });
-        }
-        return newAccessToken;
-    }
-
-    console.warn("reissueAccessToken 실패:", res.status);
-    return null;
+    const body = await res.json();
+    return body.data.accessToken;
 }

@@ -1,15 +1,25 @@
-"use client"
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchMe } from "./userApi";
+import { getAccessToken } from "../auth/authStorage";
+import { authFetch } from "../auth/authFetch";
 
 const useMe = () => {
-  return useQuery({
-    queryKey: ["me"],
-    queryFn: fetchMe,
-    staleTime: 1000 * 60, // 데이터 최신 유지 시간
-    retry: false, // 재시도
-  });
+    const token = getAccessToken();
+
+    return useQuery({
+        queryKey: ["me"],
+        queryFn: async () => {
+            const res = await authFetch("/api/users/me");
+            if (!res.ok) throw new Error("me fetch 오류");
+
+            const json = await res.json();
+            return json.data;
+        },
+        enabled: !!token,
+        staleTime: 1000 * 60,
+        retry: false,
+    });
 };
 
 export default useMe;
