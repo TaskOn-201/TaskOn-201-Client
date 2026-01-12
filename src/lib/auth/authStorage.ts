@@ -2,6 +2,7 @@ import { JoinedProject } from "../user/userApi";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const USER_KEY = "user";
+const PROJECT_STORAGE_KEY = "project-storage"
 
 export interface AuthUser {
     userId: number;
@@ -44,4 +45,5 @@ export function clearAuth() {
     if (typeof window === "undefined") return null;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(PROJECT_STORAGE_KEY)
 }
