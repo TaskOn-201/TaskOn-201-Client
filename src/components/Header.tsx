@@ -26,7 +26,6 @@ interface HeaderProps {
 const Header = ({ className }: HeaderProps) => {
     const { clearAuth } = useAuthStore();
     const { data: me } = useMe();
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     const logoutHandler = async () => {
@@ -36,13 +35,17 @@ const Header = ({ className }: HeaderProps) => {
             console.error(err);
             toast.error("로그아웃 중 오류가 발생했습니다.");
         } finally {
-            clearAuth();
             authCleanup(queryClient);
+            clearAuth();
 
-            await queryClient.invalidateQueries();
+            await Promise.all([
+                queryClient.removeQueries(),
+                queryClient.invalidateQueries(),
+            ]);
 
-            router.replace("/login");
-            router.refresh();
+            setTimeout(() => {
+                window.location.href = "/login";
+            }, 100);
         }
     };
 

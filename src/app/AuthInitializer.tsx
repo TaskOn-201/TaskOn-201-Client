@@ -28,16 +28,16 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
 
             const newToken = await reissueAccessToken();
             if (!newToken) {
-                clearAuth();
                 authCleanup(queryClient);
+                clearAuth();
                 router.replace("/login");
                 return;
             }
 
             const user = await fetchMe(newToken);
             if (!user) {
-                clearAuth();
                 authCleanup(queryClient);
+                clearAuth();
                 router.replace("/login");
                 return;
             }
