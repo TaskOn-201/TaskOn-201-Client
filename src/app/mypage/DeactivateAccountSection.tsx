@@ -16,11 +16,9 @@ import { userDeleteRequest } from "@/lib/auth/authApi";
 import { authCleanup } from "@/lib/auth/authCleanup";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function DeactivateAccountSection() {
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     const { clearAuth } = useAuthStore();
@@ -28,15 +26,19 @@ export default function DeactivateAccountSection() {
     const handleDeactivateAccount = async () => {
         // 계정 비활성화 로직
         try {
-            await userDeleteRequest(); 
+            await userDeleteRequest();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "계정 비활성화에 실패하였습니다");
+            toast.error(
+                err instanceof Error
+                    ? err.message
+                    : "계정 비활성화에 실패하였습니다"
+            );
             return;
         }
-
-        clearAuth();
         authCleanup(queryClient);
-        router.replace("/");
+        clearAuth();
+
+        window.location.replace("/login");
     };
 
     return (
