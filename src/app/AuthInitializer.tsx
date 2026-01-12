@@ -21,11 +21,6 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
             const token = getAccessToken();
             if (token) return;
 
-            const hasRefreshToken = document.cookie.includes("refreshToken=");
-            if (!hasRefreshToken) {
-                return; // 로그인 안 된 상태이므로 아무것도 안 함
-            }
-
             const newToken = await reissueAccessToken();
             if (!newToken) {
                 authCleanup(queryClient);
