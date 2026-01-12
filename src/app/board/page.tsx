@@ -117,9 +117,13 @@ const Board = () => {
             taskId: number;
             status: TaskStatus;
         }) => updateTaskStatus(currentProject!.projectId, taskId, status),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({
                 queryKey: ["boardTasks", currentProject?.projectId],
+            });
+            // 드래그한 태스크의 상세 캐시도 무효화
+            queryClient.invalidateQueries({
+                queryKey: ["taskDetail", currentProject?.projectId, variables.taskId],
             });
             toast.success("태스크 상태가 변경되었습니다.");
         },
