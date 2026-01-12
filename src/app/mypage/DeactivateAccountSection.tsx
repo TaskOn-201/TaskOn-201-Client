@@ -38,7 +38,9 @@ export default function DeactivateAccountSection() {
         authCleanup(queryClient);
         clearAuth();
 
-        window.location.replace("/login");
+        setTimeout(() => {
+            window.location.replace("/login");
+        }, 300);
     };
 
     return (
